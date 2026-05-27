@@ -18,7 +18,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     // 普通用户只看上架的商品
     $active = array_filter($products, function($p) { return ($p['status'] ?? 'active') === 'active'; });
-    jsonResponse(200, '成功', array_values($active));
+    
+    // 附加商家联系方式
+    $merchants = loadMerchants();
+    $result = array_values($active);
+    foreach ($result as &$p) {
+        $p['sellerContact'] = '';
+        if ($p['seller'] !== 'admin') {
+            foreach ($merchants as $m) {
+                if ($m['phone'] === $p['seller'] && $m['status'] === 'approved') {
+                    $p['sellerContact'] = $m['contact'];
+                    break;
+                }
+            }
+        }
+    }
+    
+    jsonResponse(200, '成功', $result);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

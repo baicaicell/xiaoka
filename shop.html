@@ -74,6 +74,7 @@
     <div class="brand"><span>🛒 商城</span></div>
     <div class="header-links">
       <a class="notify-btn" href="./notify.html">🔔 通知<span class="notify-badge" id="notifyBadge" style="display:none;">0</span></a>
+      <a href="./chat.html">💬 消息</a>
       <a href="./checkin.html">签到</a>
       <a href="./index.html">首页</a>
     </div>
@@ -108,6 +109,10 @@
       <img id="buyDetailImg" class="detail-img" src="" style="display:none;">
       <div id="buyDesc" style="font-size:13px;color:#666;margin-bottom:12px;"></div>
       <div id="buyPriceInfo" style="font-size:16px;font-weight:700;color:#dc3545;margin-bottom:16px;"></div>
+      <div id="sellerContact" style="font-size:13px;color:#007bff;margin-bottom:12px;padding:10px;background:#e3f2fd;border-radius:6px;display:none;">
+        <span id="sellerContactText"></span>
+        <button id="chatBtn" onclick="goChat()" style="margin-left:10px;padding:4px 12px;background:#007bff;color:#fff;border:none;border-radius:4px;font-size:12px;cursor:pointer;">发消息</button>
+      </div>
 
       <div id="addressForm" style="display:none;">
         <div class="form-group"><label>收货人姓名</label><input type="text" id="receiverName"></div>
@@ -137,6 +142,15 @@
       localStorage.removeItem('user_goldBeans');
       localStorage.removeItem('user_isMerchant');
       location.reload();
+    }
+
+    function goChat() {
+      const btn = document.getElementById('chatBtn');
+      const seller = btn.getAttribute('data-seller');
+      const name = btn.getAttribute('data-name');
+      // admin用白名单手机号
+      const targetPhone = seller === 'admin' ? '19212601468' : seller;
+      location.href = `./chat.html?to=${targetPhone}&name=${encodeURIComponent(name)}`;
     }
 
     if (!userPhone) {
@@ -222,6 +236,23 @@
       document.getElementById('buyDesc').textContent = currentProduct.desc || '';
       const payLabel = currentProduct.payType === 'goldBeans' ? '金豆' : '积分';
       document.getElementById('buyPriceInfo').textContent = `价格：${currentProduct.price} ${payLabel}`;
+
+      // 显示商家联系方式
+      const contactEl = document.getElementById('sellerContact');
+      const contactText = document.getElementById('sellerContactText');
+      if (currentProduct.seller === 'admin') {
+        contactText.textContent = '📞 联系商家（管理员）';
+        document.getElementById('chatBtn').setAttribute('data-seller', 'admin');
+        document.getElementById('chatBtn').setAttribute('data-name', '管理员');
+        contactEl.style.display = 'block';
+      } else if (currentProduct.seller) {
+        contactText.textContent = '📞 联系商家：' + (currentProduct.sellerContact || currentProduct.seller);
+        document.getElementById('chatBtn').setAttribute('data-seller', currentProduct.seller);
+        document.getElementById('chatBtn').setAttribute('data-name', currentProduct.sellerContact || '商家');
+        contactEl.style.display = 'block';
+      } else {
+        contactEl.style.display = 'none';
+      }
 
       // 图片
       const imagesDiv = document.getElementById('buyImages');
