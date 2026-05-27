@@ -111,6 +111,7 @@
     const userPhone = localStorage.getItem('user_phone');
     if (!userPhone) location.href = './login.html?from=tasks.html';
 
+    let mySubmittedTaskIds = [];
     let currentTaskId = '';
 
     loadUserInfo();
@@ -138,16 +139,22 @@
     function renderTasks(tasks) {
       const el = document.getElementById('taskList');
       if (tasks.length === 0) { el.innerHTML = '<div class="empty">暂无可完成的任务，敬请期待</div>'; return; }
-      el.innerHTML = tasks.map(t => `
-        <div class="task-item">
-          <div class="info">
-            <div class="name">${t.name}</div>
-            <div class="desc">${t.desc || ''}</div>
+      el.innerHTML = tasks.map(t => {
+        const done = mySubmittedTaskIds.includes(t.id);
+        const btnHtml = done
+          ? `<button class="do-btn" disabled style="background:#ccc;cursor:not-allowed;">已完成</button>`
+          : `<button class="do-btn" onclick="openSubmit('${t.id}','${t.name}')">去完成</button>`;
+        return `
+          <div class="task-item">
+            <div class="info">
+              <div class="name">${t.name}</div>
+              <div class="desc">${t.desc || ''}</div>
+            </div>
+            <span class="reward">+${t.reward}积分</span>
+            ${btnHtml}
           </div>
-          <span class="reward">+${t.reward}积分</span>
-          <button class="do-btn" onclick="openSubmit('${t.id}','${t.name}')">去完成</button>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function openSubmit(taskId, taskName) {
@@ -204,7 +211,12 @@
       try {
         const res = await fetch(`./api/task.php?phone=${userPhone}&type=my_submits`);
         const data = await res.json();
-        if (data.code === 200) renderSubmits(data.data);
+        if (data.code === 200) {
+          mySubmittedTaskIds = data.data.map(s => s.taskId);
+          renderSubmits(data.data);
+          // 重新渲染任务列表以更新按钮状态
+          loadTasks();
+        }
       } catch(e) {}
     }
 

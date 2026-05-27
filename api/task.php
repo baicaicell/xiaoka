@@ -83,6 +83,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if (!$task) jsonResponse(404, '任务不存在');
 
+        // 检查是否已提交过该任务（不允许重复提交）
+        $submits = loadTaskSubmits();
+        foreach ($submits as $s) {
+            if ($s['phone'] === $phone && $s['taskId'] === $taskId) {
+                jsonResponse(400, '您已完成过该任务，不能重复提交');
+            }
+        }
+
         // 处理图片上传
         $images = [];
         if (isset($_FILES['images'])) {
