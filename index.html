@@ -465,7 +465,7 @@
           <span>卡小帮智能科技</span>
           <a href="./checkin.html" style="margin-left:16px;color:#28a745;font-size:16px;font-weight:500;text-decoration:none;">每日签到</a>
         </div>
-        <div class="h-r">售后QQ群：870751948</div>
+        <div class="h-r">售后QQ群：870751948 <button id="logoutBtn" onclick="doLogout()" style="margin-left:10px;padding:4px 8px;border:1px solid #dc3545;color:#dc3545;background:none;border-radius:4px;font-size:12px;cursor:pointer;display:none;">退出登录</button></div>
       </header>
       <div class="main">
         <div class="main-t">
@@ -602,6 +602,21 @@
       </div>
     </div>
   </body>
+  <script>
+    // 退出登录
+    if (localStorage.getItem('user_phone')) {
+      document.getElementById('logoutBtn').style.display = 'inline-block';
+    }
+    function doLogout() {
+      if (!confirm('确定退出登录？')) return;
+      localStorage.removeItem('user_phone');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('user_points');
+      localStorage.removeItem('user_goldBeans');
+      localStorage.removeItem('user_isMerchant');
+      location.reload();
+    }
+  </script>
   <script>
     const answerList = [
       `

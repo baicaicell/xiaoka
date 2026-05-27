@@ -87,6 +87,7 @@
     <div id="userBar" class="user-bar" style="display:none;">
       <span class="info" id="userInfo">👤 </span>
       <span class="balance">积分：<span id="userPoints">0</span> | 金豆：<span class="gold" id="userGold">0</span></span>
+      <button onclick="doLogout()" style="padding:4px 10px;border:1px solid #dc3545;color:#dc3545;background:none;border-radius:4px;font-size:12px;cursor:pointer;">退出登录</button>
     </div>
 
     <div class="nav-bar">
@@ -127,6 +128,16 @@
     const userName = localStorage.getItem('user_name');
     let products = [];
     let currentProduct = null;
+
+    function doLogout() {
+      if (!confirm('确定退出登录？')) return;
+      localStorage.removeItem('user_phone');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('user_points');
+      localStorage.removeItem('user_goldBeans');
+      localStorage.removeItem('user_isMerchant');
+      location.reload();
+    }
 
     if (!userPhone) {
       document.getElementById('loginTip').style.display = 'block';
