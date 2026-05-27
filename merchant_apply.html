@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商家入驻 - 卡小帮</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; min-height: 100vh; }
+
+    header { width: 100%; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #eee; background: #fff; position: sticky; top: 0; z-index: 10; }
+    .brand span { font-size: 18px; font-weight: 600; }
+    .back { font-size: 14px; color: #007bff; text-decoration: none; }
+
+    .container { max-width: 500px; margin: 40px auto; padding: 0 16px; }
+    .card { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    .card h2 { font-size: 20px; margin-bottom: 8px; text-align: center; }
+    .card .sub { font-size: 14px; color: #888; margin-bottom: 24px; text-align: center; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 500; color: #333; margin-bottom: 6px; }
+    .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; }
+    .form-group textarea { height: 80px; resize: vertical; }
+
+    .btn { width: 100%; padding: 12px; background: #007bff; color: #fff; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+    .btn:hover { background: #0056b3; }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    .msg { margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 14px; text-align: center; }
+    .msg.success { background: #d4edda; color: #155724; }
+    .msg.error { background: #f8d7da; color: #721c24; }
+    .msg.info { background: #d1ecf1; color: #0c5460; }
+
+    .status-card { text-align: center; padding: 40px 20px; }
+    .status-card .icon { font-size: 48px; margin-bottom: 12px; }
+    .status-card .text { font-size: 16px; color: #333; }
+    .status-card .sub-text { font-size: 14px; color: #888; margin-top: 8px; }
+
+    .merchant-panel { margin-top: 20px; }
+    .merchant-panel a { display: block; width: 100%; padding: 12px; background: #28a745; color: #fff; border-radius: 8px; font-size: 16px; text-align: center; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span>🏪 商家入驻</span></div>
+    <a class="back" href="./shop.html">返回商城</a>
+  </header>
+
+  <div class="container">
+    <div class="card" id="applyCard">
+      <h2>商家入驻申请</h2>
+      <div class="sub">入驻后可上传商品进行销售</div>
+
+      <div id="applyForm">
+        <div class="form-group">
+          <label>商家名称</label>
+          <input type="text" id="merchantName" placeholder="请输入商家名称">
+        </div>
+        <div class="form-group">
+          <label>联系方式</label>
+          <input type="text" id="contact" placeholder="手机号/QQ/微信">
+        </div>
+        <div class="form-group">
+          <label>主营商品</label>
+          <textarea id="mainProducts" placeholder="请描述您主要销售的商品类型"></textarea>
+        </div>
+        <button class="btn" onclick="submitApply()">提交申请</button>
+      </div>
+
+      <div id="statusView" style="display:none;"></div>
+      <div class="msg" id="applyMsg" style="display:none;"></div>
+    </div>
+  </div>
+
+  <script>
+    const userPhone = localStorage.getItem('user_phone');
+    if (!userPhone) location.href = './login.html?from=merchant_apply.html';
+
+    // 检查入驻状态
+    checkStatus();
+
+    async function checkStatus() {
+      try {
+        const res = await fetch(`./api/merchant.php?phone=${userPhone}`);
+        const data = await res.json();
+        if (data.code === 200) {
+          const m = data.data;
+          document.getElementById('applyForm').style.display = 'none';
+          const view = document.getElementById('statusView');
+          view.style.display = 'block';
+
+          if (m.status === 'pending') {
+            view.innerHTML = `<div class="status-card"><div class="icon">⏳</div><div class="text">您的入驻申请正在审核中</div><div class="sub-text">提交时间：${m.applyTime}</div></div>`;
+          } else if (m.status === 'approved') {
+            view.innerHTML = `<div class="status-card"><div class="icon">✅</div><div class="text">您已成为商家</div><div class="sub-text">商家名：${m.merchantName}</div></div><div class="merchant-panel"><a href="./merchant_manage.html">进入商家管理</a></div>`;
+          } else {
+            view.innerHTML = `<div class="status-card"><div class="icon">❌</div><div class="text">您的入驻申请未通过</div><div class="sub-text">请联系管理员了解详情</div></div>`;
+          }
+        }
+      } catch(e) {}
+    }
+
+    async function submitApply() {
+      const merchantName = document.getElementById('merchantName').value.trim();
+      const contact = document.getElementById('contact').value.trim();
+      const mainProducts = document.getElementById('mainProducts').value.trim();
+
+      if (!merchantName || !contact || !mainProducts) {
+        showMsg('请填写完整信息', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('./api/merchant.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'apply', phone: userPhone, merchantName, contact, mainProducts })
+        });
+        const data = await res.json();
+        if (data.code === 200) {
+          showMsg('申请已提交，请等待审核', 'success');
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          showMsg(data.msg, 'error');
+        }
+      } catch(e) {
+        showMsg('网络错误', 'error');
+      }
+    }
+
+    function showMsg(text, type) {
+      const el = document.getElementById('applyMsg');
+      el.textContent = text;
+      el.className = 'msg ' + type;
+      el.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

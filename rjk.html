@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>软件库</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; color: #222; }
+
+    header { width: 100%; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: #fff; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand img { width: 36px; height: 36px; border-radius: 50%; }
+    .brand span { font-size: 18px; font-weight: 600; }
+    .back { font-size: 14px; color: #007bff; text-decoration: none; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0 20px; flex-wrap: wrap; }
+    .search { flex: 1; min-width: 220px; position: relative; }
+    .search input { width: 100%; height: 40px; border: 1px solid #e5e5e5; border-radius: 8px; padding: 0 12px; outline: none; }
+
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .card { border: 1px solid #eee; border-radius: 10px; overflow: hidden; background: #fff; display: flex; flex-direction: column; transition: transform .2s ease, box-shadow .2s ease; cursor: pointer; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,.06); }
+    .card img { width: 100%; height: 180px; object-fit: cover; display: block; }
+    .card .content { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .card .title { font-size: 16px; font-weight: 600; color: #222; }
+    .card .meta { font-size: 12px; color: #888; }
+
+    .empty { text-align: center; color: #888; padding: 40px 0; }
+
+    .user-bar { background: #e8f5e9; padding: 10px 16px; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
+    .user-bar .info { color: #2e7d32; }
+    .user-bar .logout { color: #dc3545; cursor: pointer; border: none; background: none; font-size: 13px; }
+
+    .login-tip { background: #fff3cd; padding: 16px; border-radius: 8px; margin-bottom: 16px; text-align: center; font-size: 14px; color: #856404; }
+    .login-tip a { color: #007bff; font-weight: 500; }
+
+    /* 响应式断点 */
+    @media (max-width: 1200px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 768px) {
+      header { height: auto; padding: 10px 12px; flex-direction: column; gap: 8px; }
+      .brand img { width: 32px; height: 32px; }
+      .brand span { font-size: 16px; }
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .card img { height: 150px; }
+      .container { padding: 12px; }
+    }
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr; }
+      .card img { height: 180px; }
+    }
+    a{
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <!-- <img src="./images/logo.png" alt="logo"> -->
+      <span>卡小帮软件库</span>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <a class="back" href="./upload.html">提交软件</a>
+      <a class="back" href="./index.html">返回首页</a>
+    </div>
+  </header>
+  <div class="container">
+
+    <!-- 登录状态提示 -->
+    <div id="loginTip" class="login-tip" style="display:none;">
+      ⚠️ 您尚未登录，无法下载软件。<a href="./login.html?from=rjk.html">点击登录/注册</a>
+    </div>
+    <div id="userBar" class="user-bar" style="display:none;">
+      <span class="info" id="userInfo"></span>
+      <button class="logout" onclick="doLogout()">退出登录</button>
+    </div>
+
+    <div id="grid" class="grid"></div>
+
+  </div>
+
+  <script>
+    // 检查登录状态
+    let isLoggedIn = false;
+    const userPhone = localStorage.getItem('user_phone');
+    const userName = localStorage.getItem('user_name');
+
+    async function checkLogin() {
+      if (!userPhone) {
+        showLoginTip();
+        return;
+      }
+      // 用户已登录（localStorage有记录即视为已登录）
+      isLoggedIn = true;
+      document.getElementById('userBar').style.display = 'flex';
+      document.getElementById('userInfo').textContent = `👤 ${userName}（${userPhone}）已登录`;
+    }
+
+    function showLoginTip() {
+      document.getElementById('loginTip').style.display = 'block';
+    }
+
+    function doLogout() {
+      localStorage.removeItem('user_phone');
+      localStorage.removeItem('user_name');
+      location.reload();
+    }
+
+    // 固定的软件列表（原有的）
+    const fixedItems = [
+      { title: '卡小帮ic助手', url:'http://47.95.226.41:8087/autoupdate/kxb_soft.zip' },
+      { title: '变色龙电脑版', url:'./exe/chameleonultragui.zip' },
+      { title: '变色龙手机版', url:'./exe/base.apk.1' },
+      { title: '532电脑版', url:'./exe/pcr532电脑端.exe' },
+      { title: '532手机版', url:'./exe/pcr532安卓端.apk.1' },
+      { title: '初心IC卡分析助手', url:'./exe/初心IC卡分析助手.exe' },
+    ];
+
+    const grid = document.getElementById('grid');
+    let downloadCounts = {};
+
+    // 加载下载量
+    async function loadDownloadCounts() {
+      try {
+        const res = await fetch('./api/download_count.php');
+        const data = await res.json();
+        if (data.code === 200) {
+          downloadCounts = data.data || {};
+        }
+      } catch (err) {
+        console.log('下载量加载失败');
+      }
+    }
+
+    // 增加下载量
+    async function addDownload(key) {
+      try {
+        await fetch('./api/download_count.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key })
+        });
+      } catch (err) {}
+    }
+
+    function getCountDisplay(key) {
+      const count = downloadCounts[key] || 0;
+      return count > 0 ? `下载量: ${count}` : '下载量: 0';
+    }
+
+    function render(list) {
+      grid.innerHTML = list.map(item => {
+        const key = item.title;
+        const meta = item.desc || '点击下载';
+        const countText = getCountDisplay(key);
+        // 未登录时禁止下载
+        if (!isLoggedIn) {
+          return `
+          <div class="card" onclick="alert('请先登录后再下载');location.href='./login.html?from=rjk.html';" title="${item.title}">
+            <div class="content">
+              <div class="title">${item.title}</div>
+              <div class="meta">${meta}</div>
+              <div class="meta" style="color:#007bff;">📥 ${countText}</div>
+            </div>
+          </div>
+          `;
+        }
+        const href = item.url ? item.url : 'javascript:void(0)';
+        const extra = item.url ? ' target="_blank" rel="noopener" download' : '';
+        return `
+        <a class="card" href="${href}"${extra} title="${item.title}" onclick="addDownload('${key}')">
+          <div class="content">
+            <div class="title">${item.title}</div>
+            <div class="meta">${meta}</div>
+            <div class="meta" style="color:#007bff;">📥 ${countText}</div>
+          </div>
+        </a>
+        `;
+      }).join('');
+    }
+
+    // 再从后端加载审核通过的软件，追加到列表
+    async function loadApproved() {
+      try {
+        const res = await fetch('./api/list.php?status=approved');
+        const data = await res.json();
+        if (data.code === 200 && data.data.length > 0) {
+          const dynamicItems = data.data.map(item => ({
+            title: item.title,
+            url: './uploads/' + item.fileName,
+            desc: item.desc || '点击下载'
+          }));
+          render([...fixedItems, ...dynamicItems]);
+        }
+      } catch (err) {
+        console.log('动态列表加载失败，使用固定列表');
+      }
+    }
+
+    // 初始化
+    checkLogin().then(async () => {
+      await loadDownloadCounts();
+      render(fixedItems);
+      loadApproved();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>金豆提现 - 卡小帮</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; min-height: 100vh; }
+
+    header { width: 100%; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #eee; background: #fff; position: sticky; top: 0; z-index: 10; }
+    .brand span { font-size: 18px; font-weight: 600; }
+    .header-links { display: flex; gap: 12px; }
+    .header-links a { font-size: 14px; color: #007bff; text-decoration: none; }
+
+    .container { max-width: 500px; margin: 30px auto; padding: 0 16px; }
+
+    .balance-card { background: linear-gradient(135deg, #ff6b00, #ff9800); border-radius: 16px; padding: 24px; color: #fff; margin-bottom: 20px; text-align: center; }
+    .balance-card .label { font-size: 14px; opacity: .8; margin-bottom: 6px; }
+    .balance-card .amount { font-size: 36px; font-weight: 700; }
+    .balance-card .tip { font-size: 12px; opacity: .7; margin-top: 8px; }
+
+    .form-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 20px; }
+    .form-card h3 { font-size: 18px; margin-bottom: 16px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 500; color: #333; margin-bottom: 6px; }
+    .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; }
+    .form-group input:focus { border-color: #ff6b00; }
+    .form-group .hint { font-size: 12px; color: #888; margin-top: 4px; }
+
+    .upload-area { border: 2px dashed #ddd; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: border-color .2s; }
+    .upload-area:hover { border-color: #ff6b00; }
+    .upload-area input { display: none; }
+    .upload-area .icon { font-size: 32px; margin-bottom: 8px; }
+    .upload-area .text { font-size: 14px; color: #666; }
+    .upload-preview { margin-top: 10px; }
+    .upload-preview img { max-width: 150px; max-height: 150px; border-radius: 8px; }
+
+    .btn { width: 100%; padding: 14px; background: #ff6b00; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background .2s; }
+    .btn:hover { background: #e65c00; }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    .rules { background: #fff3e0; border-radius: 8px; padding: 14px; margin-bottom: 20px; }
+    .rules h4 { font-size: 14px; color: #e65100; margin-bottom: 8px; }
+    .rules li { font-size: 13px; color: #666; line-height: 1.8; list-style: none; }
+    .rules li::before { content: "•"; color: #ff6b00; margin-right: 6px; }
+
+    .history { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    .history h3 { font-size: 16px; margin-bottom: 12px; }
+    .history-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+    .history-item:last-child { border-bottom: none; }
+    .history-item .info { font-size: 14px; color: #333; }
+    .history-item .time { font-size: 12px; color: #aaa; }
+    .history-item .status { font-size: 12px; padding: 2px 8px; border-radius: 10px; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-approved { background: #d4edda; color: #155724; }
+    .status-rejected { background: #f8d7da; color: #721c24; }
+
+    .empty { text-align: center; color: #888; padding: 30px 0; font-size: 14px; }
+    .msg { margin-top: 12px; text-align: center; font-size: 14px; padding: 10px; border-radius: 8px; }
+    .msg.success { background: #d4edda; color: #155724; }
+    .msg.error { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span>💰 金豆提现</span></div>
+    <div class="header-links">
+      <a href="./shop.html">商城</a>
+      <a href="./index.html">首页</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="balance-card">
+      <div class="label">我的金豆余额</div>
+      <div class="amount" id="goldBalance">0</div>
+      <div class="tip">最低10金豆起提 | 每天最多提现100金豆</div>
+    </div>
+
+    <div class="rules">
+      <h4>提现规则</h4>
+      <ul>
+        <li>最低提现金额：10金豆</li>
+        <li>每日提现上限：100金豆</li>
+        <li style="color:#dc3545;font-weight:600;">提现扣除10%手续费，实际到账为提现金额的90%</li>
+        <li>需上传微信或支付宝收款码</li>
+        <li>审核通过后将转账到您的收款码</li>
+        <li>审核时间：1-3个工作日</li>
+      </ul>
+    </div>
+
+    <div class="form-card">
+      <h3>申请提现</h3>
+      <div class="form-group">
+        <label>提现金豆数量</label>
+        <input type="number" id="withdrawAmount" min="10" max="100" placeholder="请输入提现数量（10-100）" oninput="calcFee()">
+        <div class="hint">当前可提现：<span id="availableGold">0</span> 金豆</div>
+        <div id="feeInfo" style="margin-top:8px;padding:10px;background:#fff3cd;border-radius:6px;font-size:13px;color:#856404;display:none;">
+          <div>提现数量：<span id="feeAmount">0</span> 金豆</div>
+          <div>手续费(10%)：<span id="feeCharge">0</span> 金豆</div>
+          <div style="font-weight:700;color:#dc3545;">实际到账：<span id="feeActual">0</span> 金豆</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>收款码（微信/支付宝）</label>
+        <div class="upload-area" onclick="document.getElementById('qrInput').click()">
+          <input type="file" id="qrInput" accept="image/*" onchange="previewQR(this)">
+          <div class="icon">📷</div>
+          <div class="text">点击上传收款码图片</div>
+        </div>
+        <div class="upload-preview" id="qrPreview"></div>
+      </div>
+      <button class="btn" onclick="submitWithdraw()">申请提现</button>
+      <div class="msg" id="withdrawMsg" style="display:none;"></div>
+    </div>
+
+    <div class="history">
+      <h3>提现记录</h3>
+      <div id="historyList"><div class="empty">暂无记录</div></div>
+    </div>
+  </div>
+
+  <script>
+    const userPhone = localStorage.getItem('user_phone');
+    if (!userPhone) location.href = './login.html?from=withdraw.html';
+
+    loadUserInfo();
+    loadHistory();
+
+    async function loadUserInfo() {
+      try {
+        const res = await fetch(`./api/user_info.php?phone=${userPhone}`);
+        const data = await res.json();
+        if (data.code === 200) {
+          document.getElementById('goldBalance').textContent = data.data.goldBeans;
+          document.getElementById('availableGold').textContent = data.data.goldBeans;
+        }
+      } catch(e) {}
+    }
+
+    function previewQR(input) {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('qrPreview').innerHTML = `<img src="${e.target.result}">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function submitWithdraw() {
+      const amount = parseInt(document.getElementById('withdrawAmount').value);
+      const qrFile = document.getElementById('qrInput').files[0];
+      const msgEl = document.getElementById('withdrawMsg');
+
+      if (!amount || amount < 10) { showMsg(msgEl, 'error', '最低提现10金豆'); return; }
+      if (amount > 100) { showMsg(msgEl, 'error', '每天最多提现100金豆'); return; }
+      if (!qrFile) { showMsg(msgEl, 'error', '请上传收款码图片'); return; }
+
+      const fee = Math.floor(amount * 0.1);
+      const actual = amount - fee;
+      if (!confirm(`提现 ${amount} 金豆，扣除10%手续费（${fee}金豆），实际到账 ${actual} 金豆，确认提交？`)) return;
+
+      const formData = new FormData();
+      formData.append('action', 'apply');
+      formData.append('phone', userPhone);
+      formData.append('amount', amount);
+      formData.append('qrCode', qrFile);
+
+      try {
+        const res = await fetch('./api/withdraw.php', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.code === 200) {
+          showMsg(msgEl, 'success', `提现申请已提交，实际到账${actual}金豆，请等待审核`);
+          document.getElementById('withdrawAmount').value = '';
+          document.getElementById('qrInput').value = '';
+          document.getElementById('qrPreview').innerHTML = '';
+          document.getElementById('feeInfo').style.display = 'none';
+          loadUserInfo();
+          loadHistory();
+        } else {
+          showMsg(msgEl, 'error', data.msg);
+        }
+      } catch(e) {
+        showMsg(msgEl, 'error', '网络错误');
+      }
+    }
+
+    function calcFee() {
+      const amount = parseInt(document.getElementById('withdrawAmount').value) || 0;
+      const feeInfo = document.getElementById('feeInfo');
+      if (amount >= 10) {
+        const fee = Math.floor(amount * 0.1);
+        const actual = amount - fee;
+        document.getElementById('feeAmount').textContent = amount;
+        document.getElementById('feeCharge').textContent = fee;
+        document.getElementById('feeActual').textContent = actual;
+        feeInfo.style.display = 'block';
+      } else {
+        feeInfo.style.display = 'none';
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch(`./api/withdraw.php?phone=${userPhone}`);
+        const data = await res.json();
+        if (data.code === 200) renderHistory(data.data);
+      } catch(e) {}
+    }
+
+    function renderHistory(list) {
+      const el = document.getElementById('historyList');
+      if (list.length === 0) { el.innerHTML = '<div class="empty">暂无提现记录</div>'; return; }
+      const statusText = { pending: '审核中', approved: '已通过', rejected: '已拒绝' };
+      el.innerHTML = list.map(w => {
+        const fee = Math.floor(w.amount * 0.1);
+        const actual = w.amount - fee;
+        return `
+          <div class="history-item">
+            <div>
+              <div class="info">${w.amount} 金豆（实际到账${actual}）</div>
+              <div class="time">${w.applyTime}</div>
+            </div>
+            <span class="status status-${w.status}">${statusText[w.status]}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showMsg(el, type, text) {
+      el.textContent = text;
+      el.className = 'msg ' + type;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+  </script>
+</body>
+</html>

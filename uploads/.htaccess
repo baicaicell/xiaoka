@@ -1,0 +1,8 @@
+# 禁止执行PHP文件，防止上传恶意脚本
+<FilesMatch "\.php$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# 允许下载文件
+Options -Indexes

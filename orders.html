@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的订单 - 卡小帮</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; min-height: 100vh; }
+
+    header { width: 100%; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #eee; background: #fff; position: sticky; top: 0; z-index: 10; }
+    .brand span { font-size: 18px; font-weight: 600; }
+    .back { font-size: 14px; color: #007bff; text-decoration: none; }
+
+    .container { max-width: 800px; margin: 24px auto; padding: 0 16px; }
+
+    .order-list { display: flex; flex-direction: column; gap: 12px; }
+    .order-item { background: #fff; border-radius: 10px; padding: 16px 20px; box-shadow: 0 1px 6px rgba(0,0,0,.04); }
+    .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .order-header .name { font-size: 16px; font-weight: 600; }
+    .order-header .status { font-size: 13px; padding: 3px 10px; border-radius: 12px; }
+    .status-delivered { background: #d4edda; color: #155724; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .order-detail { font-size: 13px; color: #666; line-height: 1.8; }
+    .order-detail .red { color: #dc3545; }
+    .download-btn { display: inline-block; margin-top: 8px; padding: 6px 14px; background: #007bff; color: #fff; border-radius: 6px; font-size: 13px; text-decoration: none; }
+    .download-btn:hover { background: #0056b3; }
+
+    .empty { text-align: center; color: #888; padding: 60px 0; font-size: 15px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span>📦 我的订单</span></div>
+    <a class="back" href="./shop.html">返回商城</a>
+  </header>
+
+  <div class="container">
+    <div class="order-list" id="orderList">
+      <div class="empty">加载中...</div>
+    </div>
+  </div>
+
+  <script>
+    const userPhone = localStorage.getItem('user_phone');
+    if (!userPhone) {
+      location.href = './login.html?from=orders.html';
+    }
+
+    async function loadOrders() {
+      try {
+        const res = await fetch(`./api/shop_order.php?phone=${userPhone}`);
+        const data = await res.json();
+        if (data.code === 200) {
+          renderOrders(data.data);
+        }
+      } catch(e) {
+        document.getElementById('orderList').innerHTML = '<div class="empty">加载失败</div>';
+      }
+    }
+
+    function renderOrders(orders) {
+      const list = document.getElementById('orderList');
+      if (orders.length === 0) {
+        list.innerHTML = '<div class="empty">暂无订单</div>';
+        return;
+      }
+
+      list.innerHTML = orders.map(order => {
+        const statusText = order.shipStatus === 'delivered' ? '已发货' : '未发货';
+        const statusClass = order.shipStatus === 'delivered' ? 'status-delivered' : 'status-pending';
+        const payLabel = order.payType === 'goldBeans' ? '金豆' : '积分';
+
+        let extra = '';
+        if (order.productType === 'virtual' && order.virtualFile) {
+          extra = `<a class="download-btn" href="./${order.virtualFile}" download="${order.virtualFileName}">⬇ 下载软件</a>`;
+        }
+        if (order.shipStatus === 'delivered' && order.shipInfo && order.productType !== 'virtual') {
+          extra += `<div style="margin-top:6px;color:#28a745;">物流信息：${order.shipInfo}</div>`;
+        }
+        if (order.shipStatus === 'pending' && order.noShipReason) {
+          extra += `<div class="red" style="margin-top:6px;">未发货原因：${order.noShipReason}</div>`;
+        }
+
+        return `
+          <div class="order-item">
+            <div class="order-header">
+              <span class="name">${order.productName}</span>
+              <span class="status ${statusClass}">${statusText}</span>
+            </div>
+            <div class="order-detail">
+              <div>支付：${order.price} ${payLabel} | 下单时间：${order.createTime}</div>
+              ${order.receiverName ? `<div>收货人：${order.receiverName} ${order.receiverPhone}</div>` : ''}
+              ${order.receiverAddress ? `<div>地址：${order.receiverAddress}</div>` : ''}
+              ${extra}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>

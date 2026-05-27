@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>每日签到 - 卡小帮</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; min-height: 100vh; }
+
+    header { width: 100%; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #eee; background: #fff; position: sticky; top: 0; z-index: 10; }
+    .brand span { font-size: 18px; font-weight: 600; }
+    .header-links { display: flex; gap: 12px; }
+    .header-links a { font-size: 14px; color: #007bff; text-decoration: none; }
+
+    .container { max-width: 500px; margin: 30px auto; padding: 0 16px; }
+
+    .login-tip { background: #fff3cd; padding: 16px; border-radius: 8px; text-align: center; font-size: 14px; color: #856404; }
+    .login-tip a { color: #007bff; font-weight: 500; }
+
+    .checkin-card { background: #fff; border-radius: 16px; padding: 28px 24px; box-shadow: 0 2px 16px rgba(0,0,0,.06); }
+
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .card-header h2 { font-size: 22px; }
+    .bonus-btn { background: #dc3545; color: #fff; border: none; border-radius: 20px; padding: 8px 16px; font-size: 14px; cursor: pointer; font-weight: 500; }
+
+    .points-display { text-align: center; margin-bottom: 20px; font-size: 15px; color: #333; }
+    .points-display span { font-size: 24px; font-weight: 700; color: #f0ad4e; }
+
+    .week-labels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; margin-bottom: 8px; }
+    .week-labels .label { font-size: 13px; color: #666; }
+    .week-labels .label .pts { font-size: 11px; color: #999; }
+
+    .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 20px; }
+    .day-box { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; background: #e9ecef; color: #666; transition: all .3s; }
+    .day-box .pts-label { font-size: 11px; font-weight: 400; margin-top: 2px; }
+    .day-box.done { background: #28a745; color: #fff; }
+    .day-box.today { border: 2px solid #28a745; }
+
+    .rule-text { text-align: center; font-size: 14px; color: #666; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 20px; }
+    .rule-text span { color: #28a745; font-weight: 700; }
+
+    .checkin-btn { width: 100%; padding: 14px; background: #28a745; color: #fff; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; transition: background .2s; }
+    .checkin-btn:hover { background: #218838; }
+    .checkin-btn:disabled { background: #ccc; cursor: not-allowed; }
+ 
+    .msg { margin-top: 12px; text-align: center; font-size: 14px; color: #28a745; }
+    .msg.error { color: #dc3545; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span>📅 每日签到</span></div>
+    <div class="header-links">
+      <a href="./shop.html">商城</a>
+      <a href="./index.html">返回首页</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="loginTip" class="login-tip" style="display:none;">
+      ⚠️ 请先登录后再签到。<a href="./login.html?from=checkin.html">点击登录/注册</a>
+    </div>
+
+    <div id="checkinCard" class="checkin-card" style="display:none;">
+      <div class="card-header">
+        <h2>签到</h2>
+        <button class="bonus-btn" onclick="location.href='./tasks.html'">点我领取更多积分！</button>
+      </div>
+
+      <div class="points-display">
+        当前积分：<span id="totalPoints">0</span>
+      </div>
+
+      <div class="week-labels">
+        <div class="label">第1天<div class="pts">1积分</div></div>
+        <div class="label">第2天<div class="pts">2积分</div></div>
+        <div class="label">第3天<div class="pts">3积分</div></div>
+        <div class="label">第4天<div class="pts">4积分</div></div>
+        <div class="label">第5天<div class="pts">5积分</div></div>
+        <div class="label">第6天<div class="pts">6积分</div></div>
+        <div class="label">第7天<div class="pts">7积分</div></div>
+      </div>
+
+      <div class="week-grid" id="weekGrid">
+        <div class="day-box" id="d1"><span>1</span><span class="pts-label">积分</span></div>
+        <div class="day-box" id="d2"><span>2</span><span class="pts-label">积分</span></div>
+        <div class="day-box" id="d3"><span>3</span><span class="pts-label">积分</span></div>
+        <div class="day-box" id="d4"><span>4</span><span class="pts-label">积分</span></div>
+        <div class="day-box" id="d5"><span>5</span><span class="pts-label">积分</span></div>
+        <div class="day-box" id="d6"><span>6</span><span class="pts-label">积分</span></div>
+        <div class="day-box" id="d7"><span>7</span><span class="pts-label">积分</span></div>
+      </div>
+
+      <div class="rule-text">7天之后，每日签到固定获得<span>7积分</span></div>
+
+      <button class="checkin-btn" id="checkinBtn" onclick="doCheckin()">立即签到</button>
+      <div class="msg" id="checkinMsg"></div>
+    </div>
+  </div>
+
+  <script>
+    const userPhone = localStorage.getItem('user_phone');
+
+    if (!userPhone) {
+      document.getElementById('loginTip').style.display = 'block';
+    } else {
+      document.getElementById('checkinCard').style.display = 'block';
+      loadCheckinData();
+    }
+
+    async function loadCheckinData() {
+      try {
+        const res = await fetch(`./api/checkin.php?phone=${userPhone}`);
+        const data = await res.json();
+        if (data.code === 200) {
+          const info = data.data;
+          document.getElementById('totalPoints').textContent = info.points;
+          updateWeekGrid(info.streak, info.records);
+        }
+      } catch (err) {
+        console.error('加载签到数据失败');
+      }
+    }
+
+    function updateWeekGrid(streak, records) {
+      const today = new Date().toISOString().slice(0, 10);
+      const todayDone = records.includes(today);
+
+      // 高亮已签到的天数
+      const daysToHighlight = todayDone ? streak : streak;
+      for (let i = 1; i <= 7; i++) {
+        const el = document.getElementById('d' + i);
+        if (i <= daysToHighlight) {
+          el.classList.add('done');
+        } else {
+          el.classList.remove('done');
+        }
+      }
+
+      if (todayDone) {
+        document.getElementById('checkinBtn').disabled = true;
+        document.getElementById('checkinBtn').textContent = '今日已签到 ✓';
+      }
+    }
+
+    async function doCheckin() {
+      try {
+        const res = await fetch('./api/checkin.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: userPhone })
+        });
+        const data = await res.json();
+
+        if (data.code === 200) {
+          const info = data.data;
+          document.getElementById('totalPoints').textContent = info.totalPoints;
+          localStorage.setItem('user_points', info.totalPoints);
+          document.getElementById('checkinBtn').disabled = true;
+          document.getElementById('checkinBtn').textContent = '今日已签到 ✓';
+          showMsg(`签到成功！+${info.earnPoints}积分（连续${info.streak}天）`);
+          updateWeekGrid(info.streak, [new Date().toISOString().slice(0, 10)]);
+          // 重新加载
+          loadCheckinData();
+        } else {
+          showMsg(data.msg, true);
+        }
+      } catch (err) {
+        showMsg('网络错误，请重试', true);
+      }
+    }
+
+    function showMsg(text, isError) {
+      const el = document.getElementById('checkinMsg');
+      el.textContent = text;
+      el.className = 'msg' + (isError ? ' error' : '');
+    }
+  </script>
+</body>
+</html>

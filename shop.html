@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商城 - 卡小帮</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; min-height: 100vh; }
+
+    header { width: 100%; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #eee; background: #fff; position: sticky; top: 0; z-index: 10; }
+    .brand span { font-size: 18px; font-weight: 600; }
+    .header-links { display: flex; gap: 12px; align-items: center; }
+    .header-links a { font-size: 14px; color: #007bff; text-decoration: none; }
+    .notify-btn { position: relative; font-size: 14px; color: #007bff; text-decoration: none; cursor: pointer; }
+    .notify-badge { position: absolute; top: -6px; right: -8px; background: #dc3545; color: #fff; font-size: 10px; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+
+    .user-bar { background: #e8f5e9; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .user-bar .info { color: #2e7d32; font-size: 14px; }
+    .user-bar .balance { font-size: 14px; color: #333; }
+    .user-bar .balance span { font-weight: 700; color: #f0ad4e; }
+    .user-bar .balance .gold { color: #ff6b00; }
+
+    .nav-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .nav-bar a, .nav-bar button { padding: 8px 16px; border-radius: 8px; font-size: 14px; text-decoration: none; border: 1px solid #ddd; background: #fff; color: #333; cursor: pointer; transition: all .2s; }
+    .nav-bar a:hover, .nav-bar button:hover { background: #007bff; color: #fff; border-color: #007bff; }
+    .nav-bar .active { background: #007bff; color: #fff; border-color: #007bff; }
+
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .product { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.05); transition: transform .2s, box-shadow .2s; cursor: pointer; }
+    .product:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.1); }
+    .product img { width: 100%; height: 200px; object-fit: cover; }
+    .product .info { padding: 14px; }
+    .product .name { font-size: 15px; font-weight: 600; color: #222; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .product .desc { font-size: 12px; color: #888; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .product .price { font-size: 18px; font-weight: 700; color: #dc3545; }
+    .product .pay-type { font-size: 11px; color: #888; margin-top: 4px; }
+    .product .type-tag { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #e3f2fd; color: #1565c0; margin-bottom: 6px; }
+    .product .type-tag.virtual { background: #f3e5f5; color: #7b1fa2; }
+
+    .empty { text-align: center; color: #888; padding: 60px 0; font-size: 15px; }
+
+    .login-tip { background: #fff3cd; padding: 16px; border-radius: 8px; margin-bottom: 16px; text-align: center; font-size: 14px; color: #856404; }
+    .login-tip a { color: #007bff; font-weight: 500; }
+
+    /* 弹窗 */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.5); z-index: 100; justify-content: center; align-items: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #fff; border-radius: 12px; padding: 24px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+    .modal h3 { margin-bottom: 16px; font-size: 18px; }
+    .modal .form-group { margin-bottom: 14px; }
+    .modal .form-group label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; }
+    .modal .form-group input, .modal .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; outline: none; }
+    .modal .form-group textarea { height: 60px; resize: vertical; }
+    .modal .btn-row { display: flex; gap: 10px; margin-top: 16px; }
+    .modal .btn-row button { flex: 1; padding: 10px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
+    .modal .btn-confirm { background: #007bff; color: #fff; }
+    .modal .btn-cancel { background: #e9ecef; color: #333; }
+    .modal .red-tip { color: #dc3545; font-size: 12px; margin-top: 8px; }
+
+    .product-images { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px; }
+    .product-images img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 2px solid transparent; cursor: pointer; }
+    .product-images img.active { border-color: #007bff; }
+    .detail-img { width: 100%; max-height: 300px; object-fit: contain; border-radius: 8px; margin-bottom: 12px; }
+
+    @media (max-width: 768px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span>🛒 商城</span></div>
+    <div class="header-links">
+      <a class="notify-btn" href="./notify.html">🔔 通知<span class="notify-badge" id="notifyBadge" style="display:none;">0</span></a>
+      <a href="./checkin.html">签到</a>
+      <a href="./index.html">首页</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="loginTip" class="login-tip" style="display:none;">
+      ⚠️ 请先<a href="./login.html?from=shop.html">登录/注册</a>后使用商城功能
+    </div>
+
+    <div id="userBar" class="user-bar" style="display:none;">
+      <span class="info" id="userInfo">👤 </span>
+      <span class="balance">积分：<span id="userPoints">0</span> | 金豆：<span class="gold" id="userGold">0</span></span>
+    </div>
+
+    <div class="nav-bar">
+      <a href="./shop.html" class="active">全部商品</a>
+      <a href="./orders.html">我的订单</a>
+      <a href="./withdraw.html" style="background:#ff6b00;color:#fff;border-color:#ff6b00;">💰 金豆提现</a>
+      <a href="./merchant_apply.html">商家入驻</a>
+    </div>
+
+    <div class="grid" id="productGrid"></div>
+  </div>
+
+  <!-- 购买弹窗 -->
+  <div class="modal-overlay" id="buyModal">
+    <div class="modal">
+      <h3 id="buyTitle">购买商品</h3>
+      <div id="buyImages" class="product-images"></div>
+      <img id="buyDetailImg" class="detail-img" src="" style="display:none;">
+      <div id="buyDesc" style="font-size:13px;color:#666;margin-bottom:12px;"></div>
+      <div id="buyPriceInfo" style="font-size:16px;font-weight:700;color:#dc3545;margin-bottom:16px;"></div>
+
+      <div id="addressForm" style="display:none;">
+        <div class="form-group"><label>收货人姓名</label><input type="text" id="receiverName"></div>
+        <div class="form-group"><label>手机号</label><input type="tel" id="receiverPhone" maxlength="11"></div>
+        <div class="form-group"><label>详细地址</label><textarea id="receiverAddress" placeholder="省/市/区/街道/门牌号"></textarea></div>
+        <div class="red-tip">如果未发货或操作异常请联系技术人员QQ：2206729714</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="closeBuyModal()">取消</button>
+        <button class="btn-confirm" onclick="confirmBuy()">确认购买</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const userPhone = localStorage.getItem('user_phone');
+    const userName = localStorage.getItem('user_name');
+    let products = [];
+    let currentProduct = null;
+
+    if (!userPhone) {
+      document.getElementById('loginTip').style.display = 'block';
+    } else {
+      document.getElementById('userBar').style.display = 'flex';
+      document.getElementById('userInfo').textContent = `👤 ${userName}`;
+      refreshUserInfo();
+      loadProducts();
+      checkNotify();
+    }
+
+    async function refreshUserInfo() {
+      try {
+        const res = await fetch(`./api/user_info.php?phone=${userPhone}`);
+        const data = await res.json();
+        if (data.code === 200) {
+          document.getElementById('userPoints').textContent = data.data.points;
+          document.getElementById('userGold').textContent = data.data.goldBeans;
+          localStorage.setItem('user_points', data.data.points);
+          localStorage.setItem('user_goldBeans', data.data.goldBeans);
+        }
+      } catch(e) {}
+    }
+
+    async function checkNotify() {
+      try {
+        const res = await fetch(`./api/notify.php?phone=${userPhone}`);
+        const data = await res.json();
+        if (data.code === 200) {
+          const unread = data.data.filter(n => !n.read).length;
+          if (unread > 0) {
+            document.getElementById('notifyBadge').style.display = 'flex';
+            document.getElementById('notifyBadge').textContent = unread;
+          }
+        }
+      } catch(e) {}
+    }
+
+    async function loadProducts() {
+      try {
+        const res = await fetch('./api/shop_product.php');
+        const data = await res.json();
+        if (data.code === 200) {
+          products = data.data;
+          renderProducts();
+        }
+      } catch(e) {
+        document.getElementById('productGrid').innerHTML = '<div class="empty">加载失败</div>';
+      }
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('productGrid');
+      if (products.length === 0) {
+        grid.innerHTML = '<div class="empty">暂无商品</div>';
+        return;
+      }
+      grid.innerHTML = products.map(p => {
+        const img = p.images && p.images.length > 0 ? p.images[0] : './images/img1.jpg';
+        const typeTag = p.type === 'virtual' ? '<span class="type-tag virtual">虚拟软件</span>' : '<span class="type-tag">实物商品</span>';
+        const payLabel = p.payType === 'goldBeans' ? '金豆' : '积分';
+        return `
+          <div class="product" onclick="openBuy('${p.id}')">
+            <img src="./${img}" alt="${p.name}">
+            <div class="info">
+              ${typeTag}
+              <div class="name">${p.name}</div>
+              <div class="desc">${p.desc || ''}</div>
+              <div class="price">${p.price} ${payLabel}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openBuy(productId) {
+      if (!userPhone) { alert('请先登录'); return; }
+      currentProduct = products.find(p => p.id === productId);
+      if (!currentProduct) return;
+
+      document.getElementById('buyTitle').textContent = currentProduct.name;
+      document.getElementById('buyDesc').textContent = currentProduct.desc || '';
+      const payLabel = currentProduct.payType === 'goldBeans' ? '金豆' : '积分';
+      document.getElementById('buyPriceInfo').textContent = `价格：${currentProduct.price} ${payLabel}`;
+
+      // 图片
+      const imagesDiv = document.getElementById('buyImages');
+      const detailImg = document.getElementById('buyDetailImg');
+      if (currentProduct.images && currentProduct.images.length > 0) {
+        imagesDiv.innerHTML = currentProduct.images.map((img, i) =>
+          `<img src="./${img}" class="${i===0?'active':''}" onclick="switchImg(this, './${img}')">`
+        ).join('');
+        detailImg.src = './' + currentProduct.images[0];
+        detailImg.style.display = 'block';
+      } else {
+        imagesDiv.innerHTML = '';
+        detailImg.style.display = 'none';
+      }
+
+      // 实物需要地址
+      document.getElementById('addressForm').style.display = currentProduct.type === 'physical' ? 'block' : 'none';
+
+      document.getElementById('buyModal').classList.add('active');
+    }
+
+    function switchImg(el, src) {
+      document.querySelectorAll('#buyImages img').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('buyDetailImg').src = src;
+    }
+
+    function closeBuyModal() {
+      document.getElementById('buyModal').classList.remove('active');
+      currentProduct = null;
+    }
+
+    async function confirmBuy() {
+      if (!currentProduct) return;
+
+      const body = {
+        phone: userPhone,
+        productId: currentProduct.id,
+      };
+
+      if (currentProduct.type === 'physical') {
+        body.receiverName = document.getElementById('receiverName').value.trim();
+        body.receiverPhone = document.getElementById('receiverPhone').value.trim();
+        body.receiverAddress = document.getElementById('receiverAddress').value.trim();
+        if (!body.receiverName || !body.receiverPhone || !body.receiverAddress) {
+          alert('请填写完整的收货信息');
+          return;
+        }
+      }
+
+      try {
+        const res = await fetch('./api/shop_order.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.code === 200) {
+          alert('购买成功！' + (currentProduct.type === 'virtual' ? '请到"我的订单"中下载软件' : '请等待发货'));
+          closeBuyModal();
+          refreshUserInfo();
+        } else {
+          alert(data.msg);
+        }
+      } catch(e) {
+        alert('网络错误');
+      }
+    }
+  </script>
+</body>
+</html>

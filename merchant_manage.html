@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商家管理 - 卡小帮</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; min-height: 100vh; }
+
+    header { width: 100%; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #eee; background: #fff; position: sticky; top: 0; z-index: 10; }
+    .brand span { font-size: 18px; font-weight: 600; }
+    .back { font-size: 14px; color: #007bff; text-decoration: none; }
+
+    .container { max-width: 800px; margin: 24px auto; padding: 0 16px; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .tabs button { padding: 8px 16px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 14px; }
+    .tabs button.active { background: #007bff; color: #fff; border-color: #007bff; }
+
+    .upload-form { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 20px; }
+    .upload-form h3 { margin-bottom: 16px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; outline: none; }
+    .form-group textarea { height: 60px; resize: vertical; }
+    .btn { padding: 10px 20px; background: #007bff; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
+    .btn:hover { background: #0056b3; }
+
+    .order-list { display: flex; flex-direction: column; gap: 12px; }
+    .order-item { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 1px 6px rgba(0,0,0,.04); }
+    .order-item .header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .order-item .name { font-weight: 600; }
+    .order-item .detail { font-size: 13px; color: #666; line-height: 1.8; }
+    .order-item .actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .order-item .actions button { padding: 5px 12px; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; }
+    .order-item .actions .ship-btn { background: #28a745; color: #fff; }
+    .order-item .actions .noship-btn { background: #dc3545; color: #fff; }
+    .status-badge { font-size: 12px; padding: 2px 8px; border-radius: 10px; }
+    .status-badge.delivered { background: #d4edda; color: #155724; }
+    .status-badge.pending { background: #fff3cd; color: #856404; }
+
+    .empty { text-align: center; color: #888; padding: 40px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span>🏪 商家管理</span></div>
+    <a class="back" href="./shop.html">返回商城</a>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="active" onclick="switchTab('upload')">上传商品</button>
+      <button onclick="switchTab('orders')">我的订单</button>
+    </div>
+
+    <!-- 上传商品 -->
+    <div id="uploadPanel" class="upload-form">
+      <h3>上传新商品</h3>
+      <form id="productForm" enctype="multipart/form-data">
+        <div class="form-group"><label>商品名称</label><input type="text" id="pName" required></div>
+        <div class="form-group"><label>商品描述</label><textarea id="pDesc"></textarea></div>
+        <div class="form-group"><label>价格</label><input type="number" id="pPrice" min="1" required></div>
+        <div class="form-group">
+          <label>付款方式</label>
+          <select id="pPayType"><option value="points">积分</option><option value="goldBeans">金豆</option></select>
+        </div>
+        <div class="form-group">
+          <label>商品类型</label>
+          <select id="pType" onchange="toggleVirtual()"><option value="physical">实物商品</option><option value="virtual">虚拟软件</option></select>
+        </div>
+        <div class="form-group"><label>商品图片（可多选）</label><input type="file" id="pImages" accept="image/*" multiple></div>
+        <div class="form-group" id="virtualFileGroup" style="display:none;"><label>软件文件</label><input type="file" id="pVirtualFile"></div>
+        <button type="button" class="btn" onclick="uploadProduct()">上传商品</button>
+      </form>
+    </div>
+
+    <!-- 订单管理 -->
+    <div id="ordersPanel" style="display:none;">
+      <div class="order-list" id="merchantOrders"></div>
+    </div>
+  </div>
+
+  <script>
+    const userPhone = localStorage.getItem('user_phone');
+    if (!userPhone) location.href = './login.html?from=merchant_manage.html';
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tabs button').forEach((b, i) => {
+        b.classList.toggle('active', (tab === 'upload' && i === 0) || (tab === 'orders' && i === 1));
+      });
+      document.getElementById('uploadPanel').style.display = tab === 'upload' ? 'block' : 'none';
+      document.getElementById('ordersPanel').style.display = tab === 'orders' ? 'block' : 'none';
+      if (tab === 'orders') loadMerchantOrders();
+    }
+
+    function toggleVirtual() {
+      document.getElementById('virtualFileGroup').style.display =
+        document.getElementById('pType').value === 'virtual' ? 'block' : 'none';
+    }
+
+    async function uploadProduct() {
+      const formData = new FormData();
+      formData.append('sellerPhone', userPhone);
+      formData.append('name', document.getElementById('pName').value.trim());
+      formData.append('desc', document.getElementById('pDesc').value.trim());
+      formData.append('price', document.getElementById('pPrice').value);
+      formData.append('payType', document.getElementById('pPayType').value);
+      formData.append('type', document.getElementById('pType').value);
+
+      const images = document.getElementById('pImages').files;
+      for (let i = 0; i < images.length; i++) {
+        formData.append('images[]', images[i]);
+      }
+
+      if (document.getElementById('pType').value === 'virtual') {
+        const vFile = document.getElementById('pVirtualFile').files[0];
+        if (vFile) formData.append('virtualFile', vFile);
+      }
+
+      try {
+        const res = await fetch('./api/shop_product.php', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.code === 200) {
+          alert('商品上传成功！');
+          document.getElementById('productForm').reset();
+        } else {
+          alert(data.msg);
+        }
+      } catch(e) { alert('上传失败'); }
+    }
+
+    async function loadMerchantOrders() {
+      try {
+        const res = await fetch(`./api/shop_order.php?seller=${userPhone}`);
+        const data = await res.json();
+        if (data.code === 200) renderOrders(data.data);
+      } catch(e) {}
+    }
+
+    function renderOrders(orders) {
+      const el = document.getElementById('merchantOrders');
+      if (orders.length === 0) { el.innerHTML = '<div class="empty">暂无订单</div>'; return; }
+
+      el.innerHTML = orders.map(o => {
+        const statusText = o.shipStatus === 'delivered' ? '已发货' : '未发货';
+        const statusClass = o.shipStatus === 'delivered' ? 'delivered' : 'pending';
+        const payLabel = o.payType === 'goldBeans' ? '金豆' : '积分';
+        return `
+          <div class="order-item">
+            <div class="header">
+              <span class="name">${o.productName}</span>
+              <span class="status-badge ${statusClass}">${statusText}</span>
+            </div>
+            <div class="detail">
+              <div>买家：${o.buyerName} | 支付：${o.price} ${payLabel} | 时间：${o.createTime}</div>
+              ${o.receiverName ? `<div>收货人：${o.receiverName} | 电话：${o.receiverPhone}</div>` : ''}
+              ${o.receiverAddress ? `<div>地址：${o.receiverAddress}</div>` : ''}
+              ${o.shipInfo ? `<div>物流：${o.shipInfo}</div>` : ''}
+              ${o.noShipReason ? `<div style="color:#dc3545;">未发货原因：${o.noShipReason}</div>` : ''}
+            </div>
+            ${o.shipStatus === 'pending' ? `
+            <div class="actions">
+              <button class="ship-btn" onclick="shipOrder('${o.id}')">发货</button>
+              <button class="noship-btn" onclick="noshipOrder('${o.id}')">填写未发货原因</button>
+            </div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function shipOrder(orderId) {
+      const info = prompt('请输入物流信息（快递公司+单号）：');
+      if (!info) return;
+      try {
+        const res = await fetch('./api/shop_order.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'ship', orderId, shipInfo: info, sellerPhone: userPhone })
+        });
+        const data = await res.json();
+        if (data.code === 200) { alert('发货成功'); loadMerchantOrders(); }
+        else alert(data.msg);
+      } catch(e) { alert('操作失败'); }
+    }
+
+    async function noshipOrder(orderId) {
+      const reason = prompt('请输入未发货原因：');
+      if (!reason) return;
+      try {
+        const res = await fetch('./api/shop_order.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'noship', orderId, reason, sellerPhone: userPhone })
+        });
+        const data = await res.json();
+        if (data.code === 200) { alert('已更新'); loadMerchantOrders(); }
+        else alert(data.msg);
+      } catch(e) { alert('操作失败'); }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 - 卡小帮</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; min-height: 100vh; }
+
+    header { width: 100%; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #eee; background: #fff; position: sticky; top: 0; z-index: 10; }
+    .brand span { font-size: 18px; font-weight: 600; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .header-right a { font-size: 14px; color: #007bff; text-decoration: none; }
+    .logout-btn { font-size: 13px; color: #dc3545; cursor: pointer; border: 1px solid #dc3545; padding: 4px 10px; border-radius: 4px; background: none; }
+
+    .login-wrap { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 56px); padding: 20px; }
+    .login-card { background: #fff; border-radius: 12px; padding: 40px 32px; box-shadow: 0 2px 12px rgba(0,0,0,.06); width: 100%; max-width: 380px; text-align: center; }
+    .login-card h2 { margin-bottom: 8px; font-size: 22px; }
+    .login-card p { font-size: 14px; color: #888; margin-bottom: 24px; }
+    .login-card input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; text-align: center; outline: none; margin-bottom: 16px; }
+    .login-card input:focus { border-color: #007bff; }
+    .login-btn { width: 100%; padding: 12px; background: #007bff; color: #fff; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+    .login-error { color: #dc3545; font-size: 13px; margin-top: 8px; display: none; }
+
+    .admin-panel { display: none; max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+
+    .nav-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+    .nav-tab { padding: 8px 14px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; transition: all .2s; }
+    .nav-tab.active { background: #007bff; color: #fff; border-color: #007bff; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .card { background: #fff; border-radius: 10px; padding: 16px 20px; box-shadow: 0 1px 6px rgba(0,0,0,.04); margin-bottom: 12px; }
+    .card .title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .card .detail { font-size: 13px; color: #666; line-height: 1.8; }
+
+    .form-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: flex-end; }
+    .form-row .field { flex: 1; min-width: 150px; }
+    .form-row label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+    .form-row input, .form-row select, .form-row textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none; }
+    .form-row textarea { height: 60px; }
+
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; color: #fff; }
+    .btn-primary { background: #007bff; }
+    .btn-success { background: #28a745; }
+    .btn-danger { background: #dc3545; }
+    .btn-warning { background: #f0ad4e; }
+    .btn-secondary { background: #6c757d; }
+    .btn:hover { opacity: .85; }
+
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .list-item { background: #fff; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.04); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .list-item .info { flex: 1; min-width: 200px; }
+    .list-item .info .name { font-weight: 600; font-size: 15px; }
+    .list-item .info .meta { font-size: 12px; color: #888; margin-top: 4px; }
+    .list-item .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+    .status-badge.pending { background: #fff3cd; color: #856404; }
+    .status-badge.approved { background: #d4edda; color: #155724; }
+    .status-badge.rejected { background: #f8d7da; color: #721c24; }
+    .status-badge.delivered { background: #d4edda; color: #155724; }
+
+    .search-box { margin-bottom: 12px; }
+    .search-box input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
+
+    .empty { text-align: center; color: #888; padding: 40px 0; font-size: 14px; }
+
+    .upload-form { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 1px 6px rgba(0,0,0,.04); margin-bottom: 16px; }
+    .upload-form h3 { margin-bottom: 14px; font-size: 16px; }
+
+    @media (max-width: 768px) {
+      .list-item { flex-direction: column; align-items: flex-start; }
+      .list-item .actions { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span>🔒 管理后台</span></div>
+    <div class="header-right">
+      <a href="./shop.html">商城</a>
+      <a href="./rjk.html">软件库</a>
+      <button class="logout-btn" id="logoutBtn" style="display:none;" onclick="logout()">退出</button>
+    </div>
+  </header>
+
+  <div class="login-wrap" id="loginWrap">
+    <div class="login-card">
+      <h2>管理员验证</h2>
+      <p>请输入白名单手机号进行身份验证</p>
+      <input type="tel" id="phoneInput" placeholder="请输入手机号" maxlength="11">
+      <button class="login-btn" onclick="doLogin()">验证登录</button>
+      <div class="login-error" id="loginError"></div>
+    </div>
+  </div>
+
+  <div class="admin-panel" id="adminPanel">
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('soft')">软件审核</button>
+      <button class="nav-tab" onclick="switchTab('users')">用户管理</button>
+      <button class="nav-tab" onclick="switchTab('shop')">商品管理</button>
+      <button class="nav-tab" onclick="switchTab('orders')">订单管理</button>
+      <button class="nav-tab" onclick="switchTab('points')">积分/金豆</button>
+      <button class="nav-tab" onclick="switchTab('merchants')">商家审核</button>
+      <button class="nav-tab" onclick="switchTab('withdraw')">提现审核</button>
+      <button class="nav-tab" onclick="switchTab('tasks')">任务管理</button>
+      <button class="nav-tab" onclick="switchTab('taskReview')">任务审核</button>
+      <button class="nav-tab" onclick="switchTab('notify')">发送通知</button>
+    </div>
+
+    <!-- 软件审核 -->
+    <div class="tab-panel active" id="panel-soft">
+      <div class="list" id="softList"></div>
+    </div>
+
+    <!-- 用户管理 -->
+    <div class="tab-panel" id="panel-users">
+      <div class="search-box"><input type="text" id="userSearch" placeholder="搜索手机号或用户名..." oninput="renderUsers()"></div>
+      <div class="list" id="userList"></div>
+    </div>
+
+    <!-- 商品管理 -->
+    <div class="tab-panel" id="panel-shop">
+      <div class="upload-form">
+        <h3>上传新商品</h3>
+        <form id="adminProductForm" enctype="multipart/form-data">
+          <div class="form-row">
+            <div class="field"><label>商品名称</label><input type="text" id="apName"></div>
+            <div class="field"><label>价格</label><input type="number" id="apPrice" min="1"></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>付款方式</label><select id="apPayType"><option value="points">积分</option><option value="goldBeans">金豆</option></select></div>
+            <div class="field"><label>商品类型</label><select id="apType" onchange="document.getElementById('apVirtualGroup').style.display=this.value==='virtual'?'block':'none'"><option value="physical">实物商品</option><option value="virtual">虚拟软件</option></select></div>
+          </div>
+          <div class="form-row"><div class="field"><label>描述</label><textarea id="apDesc"></textarea></div></div>
+          <div class="form-row"><div class="field"><label>商品图片（可多选）</label><input type="file" id="apImages" accept="image/*" multiple></div></div>
+          <div class="form-row" id="apVirtualGroup" style="display:none;"><div class="field"><label>软件文件</label><input type="file" id="apVirtualFile"></div></div>
+          <button type="button" class="btn btn-primary" onclick="adminUploadProduct()">上传商品</button>
+        </form>
+      </div>
+      <div class="list" id="shopList"></div>
+    </div>
+
+    <!-- 订单管理 -->
+    <div class="tab-panel" id="panel-orders">
+      <div class="list" id="orderList"></div>
+    </div>
+
+    <!-- 积分/金豆管理 -->
+    <div class="tab-panel" id="panel-points">
+      <div class="card">
+        <div class="title">增加/减少用户积分或金豆</div>
+        <div class="form-row">
+          <div class="field"><label>用户手机号</label><input type="tel" id="ptPhone" maxlength="11"></div>
+          <div class="field"><label>类型</label><select id="ptType"><option value="points">积分</option><option value="goldBeans">金豆</option></select></div>
+          <div class="field"><label>数量（负数为减少）</label><input type="number" id="ptAmount"></div>
+          <div class="field" style="display:flex;align-items:flex-end;"><button class="btn btn-primary" onclick="adjustPoints()">执行</button></div>
+        </div>
+        <div id="ptResult" style="font-size:13px;color:#28a745;margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- 商家审核 -->
+    <div class="tab-panel" id="panel-merchants">
+      <div class="list" id="merchantList"></div>
+    </div>
+
+    <!-- 提现审核 -->
+    <div class="tab-panel" id="panel-withdraw">
+      <div class="list" id="withdrawList"></div>
+    </div>
+
+    <!-- 任务管理 -->
+    <div class="tab-panel" id="panel-tasks">
+      <div class="card">
+        <div class="title">创建新任务</div>
+        <div class="form-row">
+          <div class="field"><label>任务名称</label><input type="text" id="taskName" placeholder="如：关注公众号截图"></div>
+          <div class="field"><label>奖励积分</label><input type="number" id="taskReward" min="1" placeholder="如：5"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>任务描述</label><textarea id="taskDesc" placeholder="详细说明任务要求"></textarea></div>
+        </div>
+        <button class="btn btn-primary" onclick="createTask()">创建任务</button>
+        <div id="taskCreateResult" style="font-size:13px;color:#28a745;margin-top:8px;"></div>
+      </div>
+      <h3 style="margin:16px 0 10px;font-size:16px;">已有任务</h3>
+      <div class="list" id="taskListAdmin"></div>
+    </div>
+
+    <!-- 任务审核 -->
+    <div class="tab-panel" id="panel-taskReview">
+      <div class="list" id="taskSubmitList"></div>
+    </div>
+
+    <!-- 发送通知 -->
+    <div class="tab-panel" id="panel-notify">
+      <div class="card">
+        <div class="title">发送通知给用户</div>
+        <div class="form-row">
+          <div class="field"><label>接收人手机号（输入 all 发给所有人）</label><input type="text" id="notiTo" placeholder="手机号 或 all"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>标题</label><input type="text" id="notiTitle" placeholder="通知标题"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>内容</label><textarea id="notiContent" placeholder="通知内容"></textarea></div>
+        </div>
+        <button class="btn btn-primary" onclick="sendNotify()">发送</button>
+        <div id="notiResult" style="font-size:13px;color:#28a745;margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let token = localStorage.getItem('admin_token') || '';
+    let allData = [], allUsers = [];
+
+    if (token) showPanel();
+
+    document.getElementById('phoneInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+    async function doLogin() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      const errorEl = document.getElementById('loginError');
+      if (!phone || phone.length !== 11) { errorEl.textContent = '请输入正确的11位手机号'; errorEl.style.display = 'block'; return; }
+      try {
+        const res = await fetch('./api/verify.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
+        const data = await res.json();
+        if (data.code === 200) { token = data.data.token; localStorage.setItem('admin_token', token); errorEl.style.display = 'none'; showPanel(); }
+        else { errorEl.textContent = data.msg; errorEl.style.display = 'block'; }
+      } catch (err) { errorEl.textContent = '网络错误'; errorEl.style.display = 'block'; }
+    }
+
+    function showPanel() {
+      document.getElementById('loginWrap').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'inline-block';
+      loadSoftList();
+    }
+
+    function logout() {
+      token = ''; localStorage.removeItem('admin_token');
+      document.getElementById('loginWrap').style.display = 'flex';
+      document.getElementById('adminPanel').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'none';
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.nav-tab').forEach((b, i) => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('panel-' + tab).classList.add('active');
+
+      if (tab === 'soft') loadSoftList();
+      if (tab === 'users') loadUsers();
+      if (tab === 'shop') loadShopList();
+      if (tab === 'orders') loadOrders();
+      if (tab === 'merchants') loadMerchants();
+      if (tab === 'withdraw') loadWithdraws();
+      if (tab === 'tasks') loadTasksAdmin();
+      if (tab === 'taskReview') loadTaskSubmits();
+    }
+
+    // ===== 软件审核 =====
+    async function loadSoftList() {
+      try {
+        const res = await fetch(`./api/list.php?status=all&token=${token}`);
+        const data = await res.json();
+        if (data.code === 403) { logout(); return; }
+        allData = data.data || [];
+        renderSoftList();
+      } catch(e) {}
+    }
+
+    function renderSoftList() {
+      const el = document.getElementById('softList');
+      if (allData.length === 0) { el.innerHTML = '<div class="empty">暂无数据</div>'; return; }
+      el.innerHTML = allData.map(item => {
+        const statusText = { pending: '待审核', approved: '已通过', rejected: '已拒绝' };
+        const sizeText = (item.size / 1024 / 1024).toFixed(2) + 'MB';
+        return `<div class="list-item">
+          <div class="info">
+            <div class="name">${item.title} <span class="status-badge ${item.status}">${statusText[item.status]}</span></div>
+            <div class="meta">文件: ${item.originalName} | ${sizeText} | ${item.uploadTime}</div>
+            ${item.desc ? `<div class="meta">${item.desc}</div>` : ''}
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="window.open('./uploads/${item.fileName}')">下载</button>
+            ${item.status === 'pending' ? `<button class="btn btn-success" onclick="reviewSoft('${item.id}','approve')">通过</button><button class="btn btn-danger" onclick="reviewSoft('${item.id}','reject')">拒绝</button>` : ''}
+            <button class="btn btn-secondary" onclick="deleteSoft('${item.id}')">删除</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function reviewSoft(id, action) {
+      if (!confirm(`确定${action==='approve'?'通过':'拒绝'}？`)) return;
+      await fetch('./api/review.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action, token }) });
+      loadSoftList();
+    }
+
+    async function deleteSoft(id) {
+      if (!confirm('确定删除？')) return;
+      await fetch('./api/delete.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, token }) });
+      loadSoftList();
+    }
+
+    // ===== 用户管理 =====
+    async function loadUsers() {
+      try {
+        const res = await fetch(`./api/user_list.php?token=${token}`);
+        const data = await res.json();
+        if (data.code === 403) { logout(); return; }
+        allUsers = data.data || [];
+        renderUsers();
+      } catch(e) {}
+    }
+
+    function renderUsers() {
+      const keyword = (document.getElementById('userSearch').value || '').trim();
+      let filtered = allUsers;
+      if (keyword) filtered = allUsers.filter(u => u.phone.includes(keyword) || u.name.includes(keyword));
+
+      const el = document.getElementById('userList');
+      if (filtered.length === 0) { el.innerHTML = '<div class="empty">无匹配用户</div>'; return; }
+      el.innerHTML = filtered.map(u => {
+        const banned = u.status === 'banned';
+        const statusBadge = banned ? '<span class="status-badge rejected">已封号</span>' : '<span class="status-badge approved">正常</span>';
+        return `
+        <div class="list-item">
+          <div class="info">
+            <div class="name">${u.name} ${statusBadge}</div>
+            <div class="meta">手机号: ${u.phone} | 密码: ${u.passwordRaw || u.password || '未设置'} | 积分: ${u.points||0} | 金豆: ${u.goldBeans||0} | 商家: ${u.isMerchant?'是':'否'} | 注册: ${u.registerTime}</div>
+          </div>
+          <div class="actions">
+            ${banned
+              ? `<button class="btn btn-success" onclick="toggleBan('${u.phone}','unban')">解封</button>`
+              : `<button class="btn btn-danger" onclick="toggleBan('${u.phone}','ban')">封号</button>`
+            }
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ===== 封号/解封 =====
+    async function toggleBan(phone, action) {
+      const text = action === 'ban' ? '封号' : '解封';
+      if (!confirm(`确定${text}该用户？`)) return;
+      try {
+        const res = await fetch('./api/user_info.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, phone, action: action === 'ban' ? 'ban' : 'unban' })
+        });
+        const data = await res.json();
+        if (data.code === 200) { alert(`${text}成功`); loadUsers(); }
+        else alert(data.msg);
+      } catch(e) { alert('操作失败'); }
+    }
+
+    // ===== 商品上下架 =====
+    async function toggleProduct(productId, action) {
+      const text = action === 'off' ? '下架' : '上架';
+      if (!confirm(`确定${text}该商品？`)) return;
+      try {
+        const res = await fetch('./api/shop_product.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'toggle', token, productId, status: action === 'off' ? 'inactive' : 'active' })
+        });
+        const data = await res.json();
+        if (data.code === 200) { alert(`${text}成功`); loadShopList(); }
+        else alert(data.msg);
+      } catch(e) { alert('操作失败'); }
+    }
+
+    // ===== 商品管理 =====
+    async function adminUploadProduct() {
+      const formData = new FormData();
+      formData.append('token', token);
+      formData.append('name', document.getElementById('apName').value.trim());
+      formData.append('desc', document.getElementById('apDesc').value.trim());
+      formData.append('price', document.getElementById('apPrice').value);
+      formData.append('payType', document.getElementById('apPayType').value);
+      formData.append('type', document.getElementById('apType').value);
+
+      const images = document.getElementById('apImages').files;
+      for (let i = 0; i < images.length; i++) formData.append('images[]', images[i]);
+
+      if (document.getElementById('apType').value === 'virtual') {
+        const vf = document.getElementById('apVirtualFile').files[0];
+        if (vf) formData.append('virtualFile', vf);
+      }
+
+      try {
+        const res = await fetch('./api/shop_product.php', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.code === 200) { alert('上传成功'); document.getElementById('adminProductForm').reset(); loadShopList(); }
+        else alert(data.msg);
+      } catch(e) { alert('上传失败'); }
+    }
+
+    async function loadShopList() {
+      try {
+        const res = await fetch(`./api/shop_product.php?all=1&token=${token}`);
+        const data = await res.json();
+        if (data.code === 200) {
+          const el = document.getElementById('shopList');
+          const products = data.data;
+          if (products.length === 0) { el.innerHTML = '<div class="empty">暂无商品</div>'; return; }
+          const payLabels = { points: '积分', goldBeans: '金豆' };
+          el.innerHTML = products.map(p => {
+            const isActive = (p.status || 'active') === 'active';
+            const statusBadge = isActive ? `<span class="status-badge approved">${p.type==='virtual'?'虚拟':'实物'}</span>` : `<span class="status-badge rejected">已下架</span>`;
+            return `
+            <div class="list-item">
+              <div class="info">
+                <div class="name">${p.name} ${statusBadge}</div>
+                <div class="meta">价格: ${p.price} ${payLabels[p.payType]||'积分'} | 卖家: ${p.seller} | ${p.createTime}</div>
+              </div>
+              <div class="actions">
+                ${isActive
+                  ? `<button class="btn btn-danger" onclick="toggleProduct('${p.id}','off')">下架</button>`
+                  : `<button class="btn btn-success" onclick="toggleProduct('${p.id}','on')">上架</button>`
+                }
+              </div>
+            </div>`;
+          }).join('');
+        }
+      } catch(e) {}
+    }
+
+    // ===== 订单管理 =====
+    async function loadOrders() {
+      try {
+        const res = await fetch(`./api/shop_order.php?token=${token}`);
+        const data = await res.json();
+        if (data.code === 200) {
+          const el = document.getElementById('orderList');
+          const orders = data.data;
+          if (orders.length === 0) { el.innerHTML = '<div class="empty">暂无订单</div>'; return; }
+          el.innerHTML = orders.map(o => {
+            const payLabel = o.payType === 'goldBeans' ? '金豆' : '积分';
+            return `<div class="list-item">
+              <div class="info">
+                <div class="name">${o.productName} <span class="status-badge ${o.shipStatus}">${o.shipStatus==='delivered'?'已发货':'未发货'}</span></div>
+                <div class="meta">买家: ${o.buyerName}(${o.buyerPhone}) | ${o.price} ${payLabel} | ${o.createTime}</div>
+                ${o.receiverName ? `<div class="meta">收货: ${o.receiverName} ${o.receiverPhone} ${o.receiverAddress}</div>` : ''}
+                ${o.shipInfo ? `<div class="meta" style="color:#28a745;">物流: ${o.shipInfo}</div>` : ''}
+                ${o.noShipReason ? `<div class="meta" style="color:#dc3545;">未发货原因: ${o.noShipReason}</div>` : ''}
+              </div>
+              <div class="actions">
+                ${o.shipStatus !== 'delivered' ? `<button class="btn btn-success" onclick="adminShip('${o.id}')">发货</button><button class="btn btn-warning" onclick="adminNoShip('${o.id}')">未发货</button>` : ''}
+              </div>
+            </div>`;
+          }).join('');
+        }
+      } catch(e) {}
+    }
+
+    async function adminShip(orderId) {
+      const info = prompt('请输入物流信息：');
+      if (!info) return;
+      await fetch('./api/shop_order.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'ship', orderId, shipInfo: info, token }) });
+      loadOrders();
+    }
+
+    async function adminNoShip(orderId) {
+      const reason = prompt('请输入未发货原因：');
+      if (!reason) return;
+      await fetch('./api/shop_order.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'noship', orderId, reason, token }) });
+      loadOrders();
+    }
+
+    // ===== 积分/金豆 =====
+    async function adjustPoints() {
+      const phone = document.getElementById('ptPhone').value.trim();
+      const type = document.getElementById('ptType').value;
+      const amount = parseInt(document.getElementById('ptAmount').value);
+      if (!phone || !amount) { alert('请填写完整'); return; }
+
+      try {
+        const res = await fetch('./api/admin_points.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, phone, type, amount }) });
+        const data = await res.json();
+        if (data.code === 200) {
+          document.getElementById('ptResult').textContent = `操作成功！当前积分: ${data.data.points}, 金豆: ${data.data.goldBeans}`;
+        } else {
+          document.getElementById('ptResult').textContent = data.msg;
+          document.getElementById('ptResult').style.color = '#dc3545';
+        }
+      } catch(e) { alert('操作失败'); }
+    }
+
+    // ===== 商家审核 =====
+    async function loadMerchants() {
+      try {
+        const res = await fetch(`./api/merchant.php?token=${token}`);
+        const data = await res.json();
+        if (data.code === 200) {
+          const el = document.getElementById('merchantList');
+          const list = data.data;
+          if (list.length === 0) { el.innerHTML = '<div class="empty">暂无商家申请</div>'; return; }
+          el.innerHTML = list.map(m => {
+            const statusText = { pending: '待审核', approved: '已通过', rejected: '已拒绝' };
+            return `<div class="list-item">
+              <div class="info">
+                <div class="name">${m.merchantName} <span class="status-badge ${m.status}">${statusText[m.status]}</span></div>
+                <div class="meta">手机: ${m.phone} | 联系: ${m.contact} | 主营: ${m.mainProducts} | ${m.applyTime}</div>
+              </div>
+              <div class="actions">
+                ${m.status === 'pending' ? `<button class="btn btn-success" onclick="reviewMerchant('${m.id}','approved')">通过</button><button class="btn btn-danger" onclick="reviewMerchant('${m.id}','rejected')">拒绝</button>` : ''}
+              </div>
+            </div>`;
+          }).join('');
+        }
+      } catch(e) {}
+    }
+
+    async function reviewMerchant(id, result) {
+      if (!confirm(`确定${result==='approved'?'通过':'拒绝'}？`)) return;
+      await fetch('./api/merchant.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'review', token, merchantId: id, result }) });
+      loadMerchants();
+    }
+
+    // ===== 发送通知 =====
+    async function sendNotify() {
+      const to = document.getElementById('notiTo').value.trim();
+      const title = document.getElementById('notiTitle').value.trim();
+      const content = document.getElementById('notiContent').value.trim();
+      if (!to || !content) { alert('请填写接收人和内容'); return; }
+
+      try {
+        const res = await fetch('./api/notify.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send', token, to, title, content }) });
+        const data = await res.json();
+        if (data.code === 200) {
+          document.getElementById('notiResult').textContent = '发送成功！';
+          document.getElementById('notiTo').value = '';
+          document.getElementById('notiTitle').value = '';
+          document.getElementById('notiContent').value = '';
+        } else {
+          document.getElementById('notiResult').textContent = data.msg;
+        }
+      } catch(e) { alert('发送失败'); }
+    }
+
+    // ===== 提现审核 =====
+    async function loadWithdraws() {
+      try {
+        const res = await fetch(`./api/withdraw.php?token=${token}`);
+        const data = await res.json();
+        if (data.code === 200) {
+          const el = document.getElementById('withdrawList');
+          const list = data.data;
+          if (list.length === 0) { el.innerHTML = '<div class="empty">暂无提现申请</div>'; return; }
+          const statusText = { pending: '待审核', approved: '已通过', rejected: '已拒绝' };
+          el.innerHTML = list.map(w => `
+            <div class="list-item">
+              <div class="info">
+                <div class="name">${w.userName}（${w.phone}） <span class="status-badge ${w.status}">${statusText[w.status]}</span></div>
+                <div class="meta">提现：${w.amount}金豆 | 申请时间：${w.applyTime}</div>
+                ${w.qrCode ? `<div class="meta"><a href="./${w.qrCode}" target="_blank" style="color:#007bff;">查看收款码</a></div>` : ''}
+              </div>
+              <div class="actions">
+                ${w.status === 'pending' ? `<button class="btn btn-success" onclick="reviewWithdraw('${w.id}','approved')">通过</button><button class="btn btn-danger" onclick="reviewWithdraw('${w.id}','rejected')">拒绝</button>` : ''}
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch(e) {}
+    }
+
+    async function reviewWithdraw(id, result) {
+      if (!confirm(`确定${result==='approved'?'通过':'拒绝'}该提现申请？`)) return;
+      await fetch('./api/withdraw.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'review', token, withdrawId: id, result }) });
+      loadWithdraws();
+    }
+
+    // ===== 任务管理 =====
+    async function createTask() {
+      const name = document.getElementById('taskName').value.trim();
+      const desc = document.getElementById('taskDesc').value.trim();
+      const reward = parseInt(document.getElementById('taskReward').value);
+
+      if (!name || !reward) { alert('请填写任务名称和奖励积分'); return; }
+
+      try {
+        const res = await fetch('./api/task.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', token, name, desc, reward }) });
+        const data = await res.json();
+        if (data.code === 200) {
+          document.getElementById('taskCreateResult').textContent = '任务创建成功！';
+          document.getElementById('taskName').value = '';
+          document.getElementById('taskDesc').value = '';
+          document.getElementById('taskReward').value = '';
+          loadTasksAdmin();
+        } else {
+          document.getElementById('taskCreateResult').textContent = data.msg;
+        }
+      } catch(e) { alert('创建失败'); }
+    }
+
+    async function loadTasksAdmin() {
+      try {
+        const res = await fetch('./api/task.php?type=tasks');
+        const data = await res.json();
+        if (data.code === 200) {
+          const el = document.getElementById('taskListAdmin');
+          const list = data.data;
+          if (list.length === 0) { el.innerHTML = '<div class="empty">暂无任务</div>'; return; }
+          el.innerHTML = list.map(t => `
+            <div class="list-item">
+              <div class="info">
+                <div class="name">${t.name}</div>
+                <div class="meta">奖励：${t.reward}积分 | ${t.desc || '无描述'} | ${t.createTime}</div>
+              </div>
+              <div class="actions">
+                <button class="btn btn-danger" onclick="deleteTask('${t.id}')">删除</button>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch(e) {}
+    }
+
+    async function deleteTask(taskId) {
+      if (!confirm('确定删除该任务？')) return;
+      await fetch('./api/task.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', token, taskId }) });
+      loadTasksAdmin();
+    }
+
+    // ===== 任务审核 =====
+    async function loadTaskSubmits() {
+      try {
+        const res = await fetch(`./api/task.php?token=${token}&type=submits`);
+        const data = await res.json();
+        if (data.code === 200) {
+          const el = document.getElementById('taskSubmitList');
+          const list = data.data;
+          if (list.length === 0) { el.innerHTML = '<div class="empty">暂无提交记录</div>'; return; }
+          const statusText = { pending: '待审核', approved: '已通过', rejected: '已拒绝' };
+          el.innerHTML = list.map(s => `
+            <div class="list-item">
+              <div class="info">
+                <div class="name">${s.userName}（${s.phone}）- ${s.taskName} <span class="status-badge ${s.status}">${statusText[s.status]}</span></div>
+                <div class="meta">奖励：${s.reward}积分 | 提交时间：${s.submitTime}</div>
+                <div class="meta">${s.images.map(img => `<a href="./${img}" target="_blank" style="margin-right:8px;"><img src="./${img}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;"></a>`).join('')}</div>
+              </div>
+              <div class="actions">
+                ${s.status === 'pending' ? `<button class="btn btn-success" onclick="reviewTaskSubmit('${s.id}','approved')">通过</button><button class="btn btn-danger" onclick="reviewTaskSubmit('${s.id}','rejected')">拒绝</button>` : ''}
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch(e) {}
+    }
+
+    async function reviewTaskSubmit(id, result) {
+      if (!confirm(`确定${result==='approved'?'通过':'拒绝'}？`)) return;
+      await fetch('./api/task.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'review', token, submitId: id, result }) });
+      loadTaskSubmits();
+    }
+  </script>
+</body>
+</html>

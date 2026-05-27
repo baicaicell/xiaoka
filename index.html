@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>卡小帮</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+
+      header {
+        width: 100%;
+        height: 56px;
+        background-color: #f5f5f5;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .h-l {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
+
+      .h-l img {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        margin-left: 16px;
+      }
+
+      .h-l span {
+        font-size: 20px;
+        margin-left: 10px;
+      }
+
+      .h-r {
+        color: red;
+        width: 249px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
+
+      .main {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+
+      .main-t {
+        display: flex;
+      }
+
+      .amin-t-l {
+        width: 380px;
+      }
+
+      .amin-t-r {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+      }
+      .rjk {
+        padding: 5px 8px;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: #fff;
+        font-size: 20px;
+        cursor: pointer;
+        text-decoration: none;
+      }
+
+      .list {
+        display: flex;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .item {
+        margin-right: 10px;
+        margin-bottom: 30px;
+        width: calc((100% - 30px) / 4);
+        cursor: pointer;
+      }
+
+      .item:nth-child(4n) {
+        margin-right: 0;
+      }
+
+      .item img {
+        width: 100%;
+        height: 300px;
+      }
+
+      .item .item-name {
+        margin-left: 20px;
+        color: #615d5d;
+      }
+
+      /* 弹窗样式 */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 999;
+      }
+
+      .modal.active {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background: white;
+        width: 80%;
+        max-width: 900px;
+        border-radius: 10px;
+        padding: 50px 20px 20px 20px;
+        position: relative;
+      }
+
+      .tab-buttons {
+        display: flex;
+        margin-bottom: 20px;
+      }
+
+      .tab-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        background: #f0f0f0;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s;
+      }
+
+      .tab-btn.active {
+        background: #007bff;
+        color: white;
+      }
+
+      .content-area {
+        min-height: 400px;
+      }
+
+      .text-content {
+        display: block;
+      }
+
+      .text-content > div {
+        display: flex;
+        gap: 20px;
+      }
+
+      .text-content > div > div:first-child {
+        flex: 1;
+      }
+
+      .text-content > div > div:last-child {
+        flex: 2;
+      }
+
+      .text-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .text-content h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      .text-content h3 {
+        font-size: 20px;
+        margin-bottom: 15px;
+        color: #444;
+      }
+
+      .text-content p {
+        margin-bottom: 15px;
+        line-height: 1.6;
+        color: #666;
+      }
+
+      .text-content ul {
+        padding-left: 20px;
+        margin-bottom: 15px;
+      }
+
+      .text-content li {
+        margin-bottom: 10px;
+        line-height: 1.5;
+        color: #666;
+      }
+
+      .video-content {
+        display: none;
+        width: 100%;
+        aspect-ratio: 16/9;
+      }
+
+      #detailVideo {
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 5px 10px;
+      }
+
+      ul {
+        list-style: none;
+        font-size: 12px;
+      }
+
+      .nav-list {
+      }
+
+      .nav-item:hover {
+        /* color: #007bff; */
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      .nav-item {
+        padding: 10px 5px;
+      }
+
+      .modal1 {
+        display: none;
+        /* 默认隐藏 */
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content1 {
+        position: relative;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        max-width: 600px;
+        width: 90%;
+        padding-top: 40px;
+      }
+
+      .modal-content1 p {
+        font-size: 12px;
+      }
+
+      .close1 {
+        color: #aaa;
+        position: absolute;
+        right: 10px;
+        font-size: 28px;
+        font-weight: bold;
+        top: -5px;
+      }
+
+      .close1:hover,
+      .close1:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      /* 移动端适配样式 */
+      @media screen and (max-width: 768px) {
+        header {
+          height: auto;
+          padding: 10px;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .h-l {
+          flex-direction: column;
+          text-align: center;
+          margin-bottom: 10px;
+        }
+
+        .h-l img {
+          margin-left: 0;
+          margin-bottom: 10px;
+        }
+
+        .h-r {
+          width: 100%;
+          justify-content: center;
+          font-size: 14px;
+        }
+
+        .main {
+          padding: 0 15px;
+        }
+
+        .main-t {
+          flex-direction: column;
+        }
+
+        .amin-t-l {
+          width: 100%;
+          margin-bottom: 20px;
+        }
+
+        .list {
+          justify-content: space-between;
+        }
+
+        .item {
+          width: calc(50% - 10px);
+          margin-right: 0;
+          margin-bottom: 20px;
+        }
+
+        .item:nth-child(4n) {
+          margin-right: 0;
+        }
+
+        .item img {
+          height: 200px;
+        }
+
+        .item .item-name {
+          margin-left: 10px;
+          font-size: 14px;
+        }
+
+        /* 弹窗移动端适配 */
+        .modal-content {
+          width: 95%;
+          padding: 15px;
+          max-height: 85vh;
+          overflow-y: auto;
+          margin: 10px;
+          padding-top: 50px;
+        }
+
+        .modal-content > div {
+          flex-direction: column;
+        }
+
+        .text-content > div {
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        .text-content > div > div:first-child {
+          text-align: center;
+        }
+
+        .text-content > div > div:first-child img {
+          max-width: 100%;
+          height: auto;
+          margin: 0 auto;
+        }
+
+        .text-content h2 {
+          font-size: 20px;
+          margin-bottom: 15px;
+          text-align: center;
+        }
+
+        .text-content h3 {
+          font-size: 18px;
+          margin-bottom: 12px;
+          text-align: center;
+        }
+
+        .text-content p {
+          font-size: 14px;
+          margin-bottom: 12px;
+        }
+
+        .text-content ul {
+          padding-left: 15px;
+          margin-bottom: 12px;
+        }
+
+        .text-content li {
+          font-size: 14px;
+          margin-bottom: 8px;
+          line-height: 1.4;
+        }
+
+        .tab-buttons {
+          margin-bottom: 15px;
+        }
+
+        .tab-btn {
+          padding: 10px;
+          font-size: 14px;
+        }
+
+        .content-area {
+          min-height: auto;
+        }
+
+        .video-content {
+          width: 100%;
+          margin: 0;
+          aspect-ratio: 16/9;
+        }
+
+        #detailVideo {
+          width: 100%;
+          height: 100%;
+          max-height: none;
+        }
+
+        /* 弹窗滚动优化 */
+        .modal-content::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .modal-content::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 3px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {
+          background: #888;
+          border-radius: 3px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb:hover {
+          background: #555;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="box">
+      <header>
+        <div class="h-l">
+          <img src="./images/logo.png" alt="" class="logo" />
+          <span>卡小帮智能科技</span>
+          <a href="./checkin.html" style="margin-left:16px;color:#28a745;font-size:16px;font-weight:500;text-decoration:none;">每日签到</a>
+        </div>
+        <div class="h-r">售后QQ群：870751948</div>
+      </header>
+      <div class="main">
+        <div class="main-t">
+          <div class="amin-t-l">
+            <h2>常见问题答疑</h2>
+            <ul class="nav-list">
+              <li class="nav-item">
+                滚动码如何对比，如果遇到了滚动码系统直接复制了会怎样？
+              </li>
+              <li class="nav-item">什么卡都可以复制吗？</li>
+              <li class="nav-item">
+                为什么写你们的卡可以用，写我自己的卡就不能用？
+              </li>
+              <li class="nav-item">
+                苹果手机可以模拟门禁卡电梯卡吗？我在网上看到很多利用公交卡模拟的是真的吗？
+              </li>
+              <li class="nav-item">模拟是不是百分百都可以用？</li>
+              <li class="nav-item">关于延期、通楼层？</li>
+            </ul>
+          </div>
+          <div class="amin-t-r">
+            <a class="rjk" href="./notify.html" style="background:none;border:1px solid #007bff;color:#007bff;margin-right:12px;">🔔 通知</a>
+            <a class="rjk" href="./withdraw.html" style="background:none;border:1px solid #ff6b00;color:#ff6b00;margin-right:12px;">💰 金豆提现</a>
+            <a class="rjk" href="./shop.html" style="background:none;border:1px solid #dc3545;color:#dc3545;margin-right:12px;">商城</a>
+            <a class="rjk" href="./rjk.html">软件库</a>
+          </div>
+        </div>
+        <div class="main-d">
+          <div class="list">
+            <div class="item">
+              <img src="./images/img1.jpg" alt="" class="item-img" />
+              <span class="item-name">单频迷你（蓝牙）无电池</span>
+            </div>
+            <div class="item">
+              <img src="./images/img2.jpg" alt="" class="item-img" />
+              <span class="item-name">双频小鹏（蓝牙）无电池</span>
+            </div>
+            <div class="item">
+              <img src="./images/img3.jpg" alt="" class="item-img" />
+              <span class="item-name">双频蓝兔（蓝牙）无电池 </span>
+            </div>
+            <div class="item">
+              <img src="./images/img4.jpg" alt="" class="item-img" />
+              <span class="item-name">青春版（蓝牙）</span>
+            </div>
+            <div class="item">
+              <img src="./images/img5.jpg" alt="" class="item-img" />
+              <span class="item-name">三代简约一体机 </span>
+            </div>
+            <div class="item">
+              <img src="./images/img6.jpg" alt="" class="item-img" />
+              <span class="item-name">三代熊猫pro Ultra</span>
+            </div>
+            <div class="item">
+              <img src="./images/img9.jpg" alt="" class="item-img" />
+              <span class="item-name">ChameleonUltra</span>
+            </div>
+            <div class="item">
+              <img src="./images/i27.jpg" alt="" class="item-img" />
+              <span class="item-name">双频手环</span>
+            </div>
+            <div class="item">
+              <img src="./images/11.jpg" alt="" class="item-img" />
+              <span class="item-name">NFC MAX</span>
+            </div>
+            <div class="item">
+              <img
+                src="./images/m12.jpg"
+                alt=""
+                class="item-img"
+                style="padding: 20px"
+              />
+              <span class="item-name">写手机 NFC 教程</span>
+            </div>
+
+            <!-- <div class="item">
+              <img src="./images/img7.jpg" alt="" class="item-img" />
+              <span class="item-name">Amiibo模拟器</span>
+            </div>
+            <div class="item">
+              <img src="./images/img8.jpg" alt="" class="item-img" />
+              <span class="item-name">模拟卡</span>
+            </div> -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 弹窗结构 -->
+    <div class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+
+        <div class="tab-buttons">
+          <button class="tab-btn active" data-tab="text">图文详情</button>
+          <button class="tab-btn" data-tab="video" id="videoBtn">
+            视频介绍
+          </button>
+        </div>
+
+        <div class="content-area">
+          <div class="text-content">
+            <div style="display: flex">
+              <div style="flex: 1; margin-right: 10px">
+                <h2 id="detailTitle"></h2>
+                <img
+                  id="detailImg"
+                  src=""
+                  alt=""
+                  style="max-width: 300px; margin: 20px 0"
+                />
+              </div>
+              <div style="flex: 2; overflow: auto; height: 500px">
+                <h3 id="czTitle" style="text-align: center"></h3>
+                <p id="detailDesc"></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-content">
+            <video id="detailVideo" controls>
+              <source src="" type="video/mp4" />
+              您的浏览器不支持视频播放
+            </video>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="myModal" class="modal1">
+      <div class="modal-content1">
+        <span class="close1">&times;</span>
+        <div id="modalAnswerBox">
+          <!-- 动态加载的答案将插入此处 -->
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    const answerList = [
+      `
+      <ul>
+        <li><strong>对比方法</strong></li>
+        <li>(1) 需要复制的卡（物业发的卡）解码保存数据</li>
+        <li>(2) 然后拿这个卡（物业发的卡）去刷门禁电梯</li>
+        <li>(3) 刷好了门禁电梯再次回来解码保存数据</li>
+        <li>(4) 对比两次保存的数据是否有变化</li>
+        <li>注意：对比是对比一张卡刷之前跟刷卡之后的数据，不是用2个不同的卡去对比，一定是解码对比。没有变化的说明没有滚动码，那么就可以直接复制使用。如果遇到了滚动码，请把数据发送本店客服技术员，会给出解决方案。</li>
+      </ul>
+      `,
+      `
+      <p>有复制的技术一定有防止你复制的技术，任何技术不存在百分百。本款机器支持常见的IC/ID门禁卡、电梯卡、停车卡。不支持水卡、电卡、超市卡、校园卡、饭卡、公交卡、游戏卡等任何消费功能的卡片。（涉及金额的系统都是非常难，违法的。如您非要去复制，且不说是否成功，但是一定碰触到了法律，复制属于个人行为与本公司无关，任何后果自负）</p>
+
+      `,
+      `
+      <p>卡片是分授权卡跟复制卡两种的，授权卡的是物业使用的，复制卡是复制器使用的。两种卡是完全不同的。物业的卡是固定的卡号出厂就固定了无法改变。而复制卡相当于魔术卡，他的卡号是可以修改的。无论是复制门禁卡还是复制电梯卡，门禁电梯系统都是识别卡号的。卡号不对即使写进去了也一定无法使用。如您是在网上购买了卡写进去也不能用，那么一定是购买错了芯片。</p>
+
+      `,
+      `
+      <p>苹果手机，苹果公司开发的所有产品都不具备门禁卡模拟功能，苹果手机无法模拟，除非手机越狱。越狱有风险。请不要相信网络上所谓的生成公交卡去模拟（那仅限于物业开通并且是不加密的门禁）。任何电梯卡电梯卡，但凡是一点加密都不行。所以苹果类的产品只能做门禁卡贴，贴在手机开门。</p>
+
+      `,
+      `
+      <p>这个无法提前预判，理论上说只要数据写入了手机手环，那么复制器的工作就已经完成了。因为全国的系统都是不一样的。有些门禁电梯他的刷卡器不兼容手机的NFC芯片会出现写入成功了不能用，这种属于硬件不兼容的。可以考虑制作卡贴使用。我们无法改变物业的硬件与手机的硬件。这个只有做了才知道</p>
+
+      `,
+      `
+      <p>不管你购买多少钱的机器 机器只是解密 解密完成就是复制 仅此而已 修改时间 楼层数据是靠自己研究 没有人能教你 全国的梯控公司几百家 每家几十种系统 每个算法都不一样 就算是别人想教你也教不了没有标准答案的。如果您想实现修改楼层延期等效果,可以把解密完成了之后提供数据来分析</p>
+
+      `,
+    ];
+
+    const navItems = document.querySelectorAll(".nav-item");
+    const modal1 = document.getElementById("myModal");
+    const modalAnswerBox = document.getElementById("modalAnswerBox");
+    const closeModal = document.querySelector(".close1");
+
+    navItems.forEach((item, index) => {
+      item.addEventListener("click", () => {
+        modalAnswerBox.innerHTML = answerList[index];
+        modal1.style.display = "flex";
+      });
+    });
+
+    closeModal.onclick = function () {
+      modal1.style.display = "none";
+    };
+
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        modal1.style.display = "none";
+      }
+    };
+  </script>
+
+  <script>
+    //     const anserlist = [
+    //       `
+    //     <ul><li>对比方法</li>
+    //   <li>(1) 需要复制的卡（物业发的卡）解码保存数据</li>
+    //   <li>(2) 然后拿这个卡（物业发的卡）去刷门禁电梯</li>
+    // <li>(3) 刷好了门禁电梯再次回来解码保存数据</li>
+    // <li>(4) 对比两次保存的数据是否有变化</li>
+    // <li>注意：对比是对比一张卡刷之前跟刷卡之后的数据，不是用2个不同的卡去对比，一定是解码对比。没有变化的说明没有滚动码，那么就可以直接复制使用。如果遇到了滚动码，请把数据发送本店客服技术员，会给出解决方案。</li>
+    //   </ul>
+    //   `,
+    //     ];
+    // 模拟数据
+    const itemsData = [
+      {
+        title: "单频迷你（蓝牙）无电池",
+        img: "./images/img1.jpg",
+        desc: `<p>微信扫码或搜索PCR532小程序进入</p>
+<ul>
+  <li>1. 数据线连接手机或者插座电源供电</li>
+  <li>2. 黑色 OTG 端连接手机，另一端连接设备</li>
+  <li>3. 微信登录操作</li>
+  <li>(1) 我的 → 登录授权，即可操作</li>
+  <li>4. 判断卡步骤（确保手机设置已打开蓝牙和位置权限）</li>
+  <li>(1) 点击"连接机器"（如果未自动跳出设备列表，请手动点击顶部"设备未连接"，然后找到并连接设备）</li>
+  <li>(2) 将原卡放置于机器上</li>
+  <li>(3) 开始读卡 → 开始读IC卡</li>
+  <li>(4) 读卡成功后，保存卡包，并命名为XX小区1</li>
+  <li>(5) 拿着卡去电梯或门禁处刷卡测试</li>
+  <li>(6) 使用原卡重复步骤(3)和(4)，保存第二个卡包，并命名为XX小区2</li>
+  <li>(7) 在"卡包"中打开XX小区1，选择"修改数据" → "数据对比"，再打开XX小区2进行对比</li>
+  <li>【如果对比结果显示有0处不同，则表示此卡支持复制】</li>
+  <li style="color: red">【如果提示有几处不同，则说明这是滚动码系统，不支持复制，请联系技术指导】</li>
+</ul>`,
+        video: "./video/v8.mp4",
+        czTitle: "蓝牙IC 迷你操作说明书",
+      },
+      {
+        title: "双频小鹏（蓝牙）无电池",
+        img: "./images/img2.jpg",
+        desc: `<p>微信扫码或搜索PCR532小程序进入</p>
+          <ul>
+            <li>1.数据线连接手机或者插座电源供电</li>
+            <li>2.(黑色otg 端连接手机，另外一段连接设备</li>
+            <li>3. 【微信登录操作】</li>
+            <li>(1)我的，登录授权，即可操作</li>
+            <li>4.首页(手机设置提前打开蓝牙)</li>
+            <li>(1)点连接机器(如未跳出设备手动点上端设备未连接找到设备，连接设备)</li>
+            <li>(2)放原卡到机器</li>
+            <li>(3)开始读卡，开始读IC卡</li>
+            <li>(4)读卡成功，保存卡包，XX小区1</li>
+            <li>(5)拿着原卡到电梯或者门禁去刷卡</li>
+             <li>(6)重复3，4步骤，保存卡包，xX小区2</li>
+            <li>(7)卡包，打开xx小区1，修改数据，数据对比，点开XX小区2进行对比</li>
+            <li>【看对比结果，提示有0处不同，此卡支持复制】</li>
+             <li style="color: red">【如提示有几处不同，则是滚动码系统，不支持复制，联系客服咨询】</li>
+             <li>5.ID 卡操作:</li>
+             <li>(1)将原卡放在机器上，点读ID卡号，读卡成功</li>
+            <li>(2)换上空卡直接点写ID卡即可</li>
+             <li>6.手机手环操作:</li>
+            <li>(1)原卡放在设备上点开始读卡</li>
+            <li>(2)读卡成功后点前往写卡</li>
+            <li>(3)点写手机手环</li>
+            <li>(4)准备一张空白卡，把新的空白卡放到机器上，点第一步制作中介</li>
+            <li>(5)在手机/手环创建空白卡后，模拟写好的中介卡(一般在手机钱包卡APP 里，手环需要连接手机APP)操作完成点第二步。</li>
+            <li>(6)手机/手环模拟中介卡成功后，把手机或手环感应区放在设备感应区，点写数据到手机/手环，操作完成。</li>
+          </ul>
+          `,
+        video: "./video/v10.mp4",
+        czTitle: "蓝牙IC 迷你操作说明书",
+      },
+      {
+        title: "双频蓝兔（蓝牙）无电池",
+        img: "./images/img3.jpg",
+        desc: `<p>微信扫码或搜索PCR532小程序进入</p>
+<ul>
+  <li>1. 数据线连接手机或者插座电源供电</li>
+  <li>2. 黑色 OTG 端连接手机，另一端连接设备</li>
+  <li>3. 【微信登录操作】</li>
+  <li>(1) 我的 → 登录授权，即可操作</li>
+  <li>4. 判断卡步骤（手机设置提前打开蓝牙）</li>
+  <li>(1) 点击"连接机器"（如未自动跳出设备列表，请手动点击顶部"设备未连接"，然后找到并连接设备）</li>
+  <li>(2) 将原卡放置于机器上</li>
+  <li>(3) 开始读卡 → 开始读IC卡</li>
+  <li>(4) 读卡成功后，保存卡包，并命名为XX小区1</li>
+  <li>(5) 拿着卡去电梯或门禁处刷卡测试</li>
+  <li>(6) 使用原卡重复步骤(3)和(4)，保存第二个卡包，命名为XX小区2</li>
+  <li>(7) 在"卡包"中打开XX小区1，选择"修改数据" → "数据对比"，再打开XX小区2进行对比</li>
+  <li>【如果对比结果显示有0处不同，则表示此卡支持复制】</li>
+  <li style="color: red">【如果提示有几处不同，则说明这是滚动码系统，不支持复制，请联系技术指导】</li>
+  <li>5. ID 卡操作：</li>
+  <li>(1) 将原ID卡放在机器上，点击"读ID卡号"，读取成功</li>
+  <li>(2) 放入空白卡，直接点击"写ID卡"完成写入</li>
+</ul>`,
+        video: "./video/v3.mp4",
+        czTitle: "蓝牙蓝兔操作说明书",
+      },
+      {
+        title: "青春版（蓝牙）",
+        img: "./images/img4.jpg",
+        desc: `<p>微信扫机器背后二维码或搜索PCR532小程序进入</p>
+<ul>
+  <li>1. 我的 → 登录 → 返回主页操作</li>
+  <li>2. 重点：判断卡步骤（手机设置提前打开蓝牙）</li>
+  <ul>
+    <li>(1) 按机器W键开机，点击"连接机器"（如果未自动跳出设备列表，请手动点击顶部"设备未连接"，然后找到并连接设备）</li>
+    <li>(2) 将原卡放置于机器上（左边为ID感应区，右边为IC感应区）</li>
+    <li>(3) 开始读卡（根据卡类型选择相应的读卡方式）</li>
+    <li>(4) 读卡成功后，保存卡包，并命名为XX小区1</li>
+    <li>(5) 拿着自己的卡去电梯或门禁处刷卡测试</li>
+    <li>(6) 使用自己的卡重复步骤(3)和(4)，保存第二个卡包，并命名为XX小区2</li>
+    <li>(7) 在"卡包"中打开XX小区1，选择"修改数据" → "数据对比"，再打开XX小区2进行对比</li>
+    <li>[如果对比结果显示有0处不同，则表示此卡支持复制]</li>
+    <li style="color: red">[如有不同，则属于滚动码系统，不支持复制，复制可能导致卡失效]</li>
+  </ul>
+  <li>3. 以上判断卡支持复制</li>
+  <ul>
+    <li>(1) 开始读卡，读IC卡</li>
+    <li>(2) 前往写卡，写复制卡</li>
+    <li>(3) 如果解卡不成功，按照提示使用高阶侦测功能</li>
+  </ul>
+</ul>`,
+        video: "./video/v4.mp4",
+        czTitle: "操作青春版说明书",
+      },
+      {
+        title: "三代简约一体机",
+        img: "./images/img5.jpg",
+        desc: `<p>微信扫码或搜索PCR532小程序进入</p>
+<ul>
+  <li>1. 我的 → 登录 → 返回主页操作</li>
+  <li>2. 首页（手机设置提前打开蓝牙）</li>
+  <ul>
+    <li>(1) 按机器IC/ID键开机，点击"连接机器"（如果未自动跳出设备列表，请手动点击顶部"设备未连接"，然后找到并连接设备）</li>
+    <li>(2) 将原卡放置于机器上（左边为ID感应区，右边为IC感应区）</li>
+    <li>(3) 开始读卡（根据卡类型选择相应的读卡方式）</li>
+    <li>(4) 读卡成功后，保存卡包，并命名为XX小区1</li>
+    <li>(5) 拿着自己的卡去电梯或门禁处刷卡测试</li>
+    <li>(6) 使用原卡重复步骤(3)和(4)，保存第二个卡包，并命名为XX小区2</li>
+    <li>(7) 在"卡包"中打开XX小区1，选择"修改数据" → "数据对比"，再打开XX小区2进行对比</li>
+    <li>[如果对比结果显示有0处不同，则表示此卡支持复制]</li>
+    <li style="color: red">[如有不同，则属于滚动码系统，不支持复制，需要技术咨询]</li>
+    <li>对于滚动码，可以考虑延期、改通层等方案，需联系技术支持</li>
+  </ul>
+  <li>3. 以上判断卡支持复制</li>
+  <ul>
+    <li>(1) 开始读卡，读IC卡</li>
+    <li>(2) 前往写卡，写复制卡或其他操作</li>
+    <li>(3) 如果解卡不成功，按照提示使用高阶侦测功能</li>
+  </ul>
+  <li>4. ID卡脱机操作</li>
+  <ul>
+    <li>(1) 原卡放在机器左边，按读，出现提示音表示读卡完成</li>
+    <li>(2) 放入空白卡在机器左边，按写，出现提示音表示写卡完成</li>
+  </ul>
+  <li>5. 模拟卡在熊猫GP侦测里上传操作</li>
+  <li>6. RS关机键（长按关机）</li>
+</ul>`,
+        video: "./video/v5.mp4",
+        czTitle: "一体机操作说明书",
+      },
+      {
+        title: "三代熊猫pro Ultra",
+        img: "./images/img6.jpg",
+        desc: `<p>微信扫码或搜索PCR532小程序进入</p>
+  <ul>
+    <li>1. 数据线连接手机或者插座电源供电</li>
+    <li>2. 黑色 OTG 端连接手机，另一端连接设备</li>
+    <li>3. 微信登录操作  </li><li>(1) 我的 → 登录授权，即可操作</li>
+    <li>4. 判断卡步骤（确保手机设置已打开蓝牙和位置权限）
+</li>
+        <li>(1) 点击"连接机器"（如果未自动跳出设备列表，请手动点击顶部"设备未连接"，然后找到并连接设备）</li>
+        <li>(2) 将原卡放置于机器上（左边为ID感应区，右边为IC感应区）</li>
+        <li>(3) 开始读卡（根据卡类型选择相应的读卡方式）</li>
+        <li>(4) 读卡成功后，保存卡包，并命名为XX小区1</li>
+        <li>(5) 拿着自己的卡去电梯或门禁处刷卡测试</li>
+        <li>(6) 使用原卡重复步骤(3)和(4)，保存第二个卡包，并命名为XX小区2</li>
+        <li>(7) 在"卡包"中打开XX小区1，选择"修改数据" → "数据对比"，再打开XX小区2进行对比
+
+            <li>【如果对比结果显示有0处不同，则表示此卡支持复制】</li>
+            <li style="color: red">【如果提示有几处不同，则说明这是滚动码系统，不支持复制，请联系技术指导】</li>
+
+    </li>
+
+  </ul>`,
+        video: "./video/v28.mp4",
+        czTitle: "三代熊猫操作说明书",
+      },
+      {
+        title: "ChameleonUltra",
+        img: "./images/img9.jpg",
+        desc: `<h2>一、产品概述</h2>
+    <ul>
+        <li>支持 IC 卡（13.56MHz）和 ID 卡（125KHz）</li>
+        <li>数据传输：USB-Type-C、蓝牙</li>
+        <li>电池：聚合物锂电池（3.7V/90mAh）</li>
+        <li>功能：读卡、写卡、模拟卡、数据对比</li>
+    </ul>
+
+    <h2>二、软件下载</h2>
+    <ul>
+        <li><strong>Windows 版</strong>：[点击下载 Windows]</li>
+        <li><strong>安卓 APP</strong>：[点击下载安卓 APP]</li>
+        <li><strong>iOS</strong>：App Store 搜索 Chameleon Ultra GUI</li>
+    </ul>
+
+    <h2>三、核心功能与操作</h2>
+    <ul>
+        <li>1.连接设备</li>
+        <li>1）点击刷新按钮刷新设备（图1）</li>
+        <li><img src="./images/i1.jpg"/></li>
+        <li>2）刷新出当前可连接的设备会出下像下图这样，点击图标即可完成连接。（手机端软件连接时，需要先唤醒设备，按任意键即可，唤醒时间8秒，如无操作会自动休眠）（图2）</li>
+        <li><img src="./images/i2.jpg"/></li>
+        <li>2.软件语言</li>
+        <li>1）软件默认为英文，根据以下步骤切换软件语言（图3、图4、图5）</li>
+
+        <li><img src="./images/i3.jpg"/></li>
+        <li><img src="./images/i4.jpg"/></li>
+        <li><img src="./images/i5.jpg"/></li>
+        <li>3.首页介绍  </li>
+        <li>1）首页页面介绍（图6）</li>
+        <li><img src="./images/i6.jpg"/></li>
+        <li>1. 返回首页<br/>
+2. 卡槽管理<br/>
+3. 卡片管理<br/>
+4. 读卡操作<br/>
+5. 写卡操作<br/>
+6. 软件设置<br/>
+7. 整卡位<br/>
+8. 固件版本<br/>
+9. 检查并刷入最新固件<br/>
+10. 断开连接<br/>
+11. 设备当前连接方式<br/>
+12. 设备当前电量<br/>
+13. 读卡模式和模拟模式切换<br/>
+14. 功能设置</li>
+        <li>2）点击图6功能设置进入图7页面</li>
+        <li><img src="./images/i7.jpg"/></li>
+        <li>1. 是设备进入DFU模式（预刷机阶段）<br/>
+2. 与首页介绍中第10处功能相同 <br/>
+3. 上传DFU压缩包刷入，常用于降级<br/>
+4. 唤醒时的跑马灯效果调节，与刷卡速度相关，设置为无，唤醒最快<br/>
+5. 设置A,B按键短按的操作，这里显示的充电为显示电量（唤醒状态下）<br/>
+6. 设置A,B按键长按的操作（唤醒状态下长按2秒松手）<br/>
+7. 开启蓝牙配对密钥，如更改请谨记密钥 <br/>
+8. 慎用，会丢失设备内卡槽页模拟的卡---按空白处退出当前页</li>
+        <li>4.读卡功能</li>
+        <li>1）IC卡读卡（图8-12）</li>
+        <li>卡位灯面是IC卡，按钮logo图案面是ID卡，读取IC卡时请将卡片放置在卡位灯面。读取ID卡时请放置在logo按钮面。如果不确定时什么卡，请依次尝试。以IC卡为例，放置好IC卡后点击图8中读取按钮</li>
+        <li><img src="./images/i8.jpg"/></li>
+        <li>点击后（图9）</li>
+        <li>1. 当前所读取的IC卡的卡号<br/>
+2. 是卡的SAK，注意如果显示SAK18、20、28，的IC卡为不支持的卡类型，可以尝试仅保存UID，并且开启卡槽中的使用0块的UID/SAK/ATQA<br/>
+3.  应答方式1K卡为00 04，4K卡为00 02<br/>
+4. 卡的技术类型<br/>
+5. 仅保存卡号而不进行解卡操作，通常适用于只识别卡号的门禁，和用于侦测密钥时保存的空卡文件 <br/>
+6. 为未解密的扇区，未知密钥为X 此时点击6的位置进行初步解卡<br/>
+7. 点击后进一步解卡</li>
+        <li><img src="./images/i9.jpg"/></li>
+        <li>初步解卡后（图10）</li>
+        <li>1. 中绿色√为已经解密的扇区，红色的X为尚未解密的扇区 <br/>
+2. 点击获取密钥继续为此卡进行解密<br/>
+3. 仅保存以解密扇区，通常此步骤不能解决问题（只识别卡号的门禁卡除外）<br/>
+4. 导出已经找到的密钥（绿色√）扇区的密钥为字典文件（养成习惯这样方便以后解卡）<br/>
+点击图10中的获取密钥继续解卡</li>
+        <li><img src="./images/i10.jpg"/></li>
+        <li>继续解卡后（图11、图12）</li>
+        <li>1. 全部变为绿色，已经完全解卡<br/>
+2. 导出已找到的密钥，存为字典，这里见图12<br/>
+3. 将解密后的卡完整的保存进卡包内，并为此卡片命名。<br/>
+4. 如果此步骤无法完成解卡，请查看后边的侦测密钥的视频教程进行侦测密钥配合解卡操作</li>
+        <li><img src="./images/i11.jpg"/></li>
+        <li>保存密钥</li>
+        <li>1. 保存为密钥文件.dic格式<br/>
+2. 保存到已有字典<br/>
+3. 保存到新的字典</li>
+        <li><img src="./images/i12.jpg"/></li>
+        <li>2）读ID卡（图13）</li>
+        <li>读ID卡，把ID卡放到背面，点击读取按钮如下图12</li>
+        <li>1. ID卡的卡号 <br/>
+2. ID卡的类型，支持EM41XX的读取。<br/>
+3. 读取ID卡<br/>
+4. 保存进卡包，不要忘记命名</li>
+        <li><img src="./images/i13.jpg"/></li>
+        <li>5.卡包管理</li>
+        <li>点击以保存的卡进入卡包</li>
+        <li>1. 进入卡包页面<br/>
+2. 导入卡片文件到卡包支持格式dump，bin<br/>
+3. 卡片名称<br/>
+4. IC卡图标<br/>
+5. IC卡技术类型<br/>
+6. 编辑卡片类型（不是编辑数据）<br/>
+7. 下载卡片，即保存卡文件用于分享数据<br/>
+8. 删除卡片<br/>
+9. ID卡图标<br/>
+10. ID卡技术类型<br/>
+11. 字典<br/>
+12. 导入dic格式字典文件<br/>
+13. 编辑字典格式为12个16进制数字，少于12位不保存，每个密钥用回车换行分割<br/>
+14. 保存字典到dic文件<br/>
+15. 删除字典</li>
+        <li><img src="./images/i14.jpg"/></li>
+        <li>6.模拟设置</li>
+        <li>点击卡槽管理进入模拟卡界面（图15）</li>
+        <li>1. 点击进入模拟卡界面<br/>
+2. 点击空白处打开卡包选择后下载到当前卡位，按首页的断开连接按钮，等待设备休眠后保存配置，再切换到刚刚模拟好的卡槽位，就可以去刷门禁卡了。<br/>
+3. 高频IC卡和低频ID卡同时开启 <br/>
+4. 只开启了高频IC卡，而低频ID卡处于关闭状态<br/>
+5. 高频IC卡处于关闭状态，而低频ID卡开启<br/>
+6. 设置卡槽（图16）<br/>
+7. 双频卡均开启的时候设备灯为红色，只开启高频卡的设备灯为绿色，只开启低频卡的灯为蓝色</li>
+        <li><img src="./images/i15.jpg"/></li>
+        <li>卡槽设置（图16）</li>
+        <li>1. 点击进入卡槽设置弹出窗口 <br/>
+2. 当前卡槽所模拟的卡名称 <br/>
+3. 开启或关闭高频IC卡或低频ID卡的卡槽<br/>
+4. 编辑卡槽，对应高频卡（图17）和低频卡（图18）<br/>
+5. 卸载当前所模拟的卡片 </li>
+         <li><img src="./images/i16.jpg"/></li>
+        <li>编辑IC卡槽（图17）</li>
+         <li>1. 点击下拉列表可以见到可以支持的模式，对卡不了解的按照默认即可 <br/>
+2. 卡号 <br/>
+3. SAK类型 <br/>
+4. 应答类型 <br/>
+5. gen1，俗称中国魔术卡，UID后门卡，一般不需要选是，过不了防火墙 <br/>
+6. gen2，俗称中国魔术卡，CUID卡，一般不需要选是，0快可以修改 <br/>
+7. 用数据中的SAK模式而非①中的SAK类型，可以模拟一些特殊SAK类型的卡（例如有些卡设置了才能开门） <br/>
+8. 侦测模式，开启后可以收集nonces随机数用来计算密钥，侦测后需要再到此处计算密钥 <br/>
+注意：收集随机数功能需要，初步解卡、继续点击获取密钥，仍然无法解卡的情况下使用侦测功能才会需要开启磁开关，比如解全加密，第三代无漏洞卡的时候，正常卡槽不需要开启。侦测方法可以看下方侦测密钥的视频。 <br/>
+9. 保存编辑的内容 <br/>
+10. 写入模式 <br/>
+       1）正常：跟正常卡一样 <br/>
+2）拒绝：只读卡，拒绝读头反写发送拒绝 <br/>
+3）欺诈：接受写入命令，但不改任何数据（读头认为写入成功，但在回读时，没有任何更改） <br/>
+4）阴影：接收写入，但在设备进入睡眠状态时回复更改（读头普通卡一样读写，单更改保存在临时空间中, 当设备进入休眠状态时丢失）
+</li>
+        <li><img src="./images/i17.jpg"/></li>
+         <li>编辑ID卡槽（图18）</li>
+        <li>1. ID卡技术类型 <br/>
+2. ID卡号编辑，这里ID卡如果你知道16进制卡号是可以直接输入使用的 <br/>
+3. 保存编辑的内容</li>
+         <li><img src="./images/i18.jpg"/></li>
+        <li>7.写卡操作</li>
+
+         <li>IC卡的写入这里说明一下，Ultra写IC卡需要写入两次，第一次写入卡号和密钥，第二次写入数据。</li>
+        <li>1. 选择卡片（图19）<br/>
+1）进入写卡界面<br/>
+2）选择要写入的IC卡数据<br/>
+3）点击下一步选择卡类型</li>
+         <li><img src="./images/i19.jpg"/></li>
+        <li>选择卡类型（图20</li>
+         <li>1）Gen1为UID卡<br/>
+2）Gen2为CUID卡<br/>
+3）Gen3为FUID卡<br/>
+4）选择完卡类型后点下一步会出现读卡页面（图21）</li>
+        <li><img src="./images/i20.jpg"/></li>
+        <li><img src="./images/i21.jpg"/></li>
+        <li>3.第一次写入会提示有失败的是因为第一次写入的是复制卡的卡号和密钥（图22）</li>
+        <li><img src="./images/i22.jpg"/></li>
+        <li>4.点击重置以后其他不需要更改，选完卡类型以后检索密钥（图23）</li>
+        <li><img src="./images/i23.jpg"/></li>
+        <li>5.检索完密钥以后写卡成功（图24）</li>
+        <li><img src="./images/i24.jpg"/></li>
+        <li>ID卡的写入，一定要买对芯片，正品5200，正品5577写入<br/>
+1. 选择卡数据<br/>
+2. 选择卡类型，这里只有一个类型<br/>
+3. 写入数据，写卡成功</li>
+        <li><img src="./images/i25.jpg"/></li>
+        <li><img src="./images/i26.jpg"/></li>
+
+
+
+    </ul>
+
+    <h2>四、注意事项</h2>
+    <ul>
+        <li>滚动码系统：若数据对比显示差异，请勿复制并联系技术支持</li>
+        <li>设备休眠：唤醒状态下长按 A/B 键 2 秒可调节参数</li>
+        <li>密钥安全：导出字典文件时建议加密保存</li>
+    </ul>`,
+        video: "./video/v9.mp4",
+        czTitle: "ChameleonUltra操作说明书",
+      },
+      {
+        title: "双频手环",
+        img: "./images/i27.jpg",
+        desc: `<p>芯片：cuid/5577</p>
+<ul>
+  <li>芯片：cuid/5577<br/>
+共两个<br/>
+校准时间<br/>
+1、触摸屏幕一下，灯亮起，显示时间，再触摸一下，显示日期；<br/>
+2、在亮灯状态下，手指触摸屏幕停留3秒，小时会闪动，此时触摸屏幕调整小时，触摸一下，增加一小时；<br/>
+3、调好小时之后，再触摸屏幕约3秒，分钟闪动，此时触摸屏幕调整分钟，触摸一下，增加一分钟；<br/>
+4、调好分钟之后，再触摸屏幕约3秒，月份闪动，此时触摸屏幕调整月份，触摸一下，增加一月<br/>
+5、调好月份之后，再触摸屏幕约3秒，日期闪动，此时触摸屏幕调整日期，触摸一下，增加一天；<br/>
+6、调整完之后，触摸屏幕几秒或静待几秒，返回时间显示界面，3秒无操作，进入省电节能模式。</li>
+
+</ul>`,
+        video: "",
+        czTitle: "双频手环操作说明书",
+      },
+      {
+        title: "龙吟科技 NFC MAX",
+        img: "./images/11.jpg",
+        desc: `
+<ul>
+  <li>有复制技术，就有反复制技术，个别小区物业为了绑定业主，定时收取高额物业费，采用的刷卡系统有可能是"滚动码"防复制系统，复制物业卡会使得主卡失效或者加入黑名单，此种情况只能找物业发卡处激活原始卡，并立即放弃复制。<br/>
+由于技术的特殊性，如造成原卡失效，并且物业不给激活，此种情况我们不承担连带责任，请联系物业进行协商。<br/>
+购买设备即标识知悉并同意以上条款。常规避免办法：对比刷卡前后两次数据。<br/>
+本设备提供的功能，仅为个人研究兴趣爱好使用
+坚决禁止利用本软件从事违反国家法律的行为活动
+任何企业或个人利用本软件对第三方造成不利影响，一切
+后果自己承担，卖家不承担任何责任!
+凡以任何方式直接或间接使用本设备教程者，视为自愿接受本协议。
+</li>
+  <li>0.下载地址</li>
+  <li>1.小程序:<br/>
+搜：PCR532或者扫码</li>
+  <li><img src="./images/m1.png"/></li>
+  <li>2.安卓APP点击下载：http://120.24.245.232/app/pcr532.apk<br/>
+或者扫码</li>
+  <li><img src="./images/m2.png"/></li>
+
+  <li>3.电脑端点击下载：https://9008683.lanzout.com/NFCmax<br/>
+或者扫码</li>
+  <li><img src="./images/m3.png"/></li>
+  <li>1.设备连接</li>
+  <li>1.小程序连接教程</li>
+  <li><video src="./video/v11.mp4" style="width:100%;height:100%;" controls id="video1"></video></li>
+  <li>2.APP连接教程</li>
+  <li><video src="./video/v12.mp4" style="width:100%;height:100%;" controls id="video2"></video></li>
+  <li>3.电脑端连接教程</li>
+  <li><video src="./video/v13.mp4" style="width:100%;height:100%;" controls id="video3"></video></li>
+  <li>2读卡写卡</li>
+  <li>1.小程序读写卡</li>
+  <li><video src="./video/v14.mp4" style="width:100%;height:100%;" controls id="video4"></video></li>
+  <li>2.安卓APP读写卡</li>
+  <li><video src="./video/v15.mp4" style="width:100%;height:100%;" controls id="video5"></video></li>
+  <li>3.电脑端读写卡</li>
+  <li><video src="./video/v16.mp4" style="width:100%;height:100%;" controls id="video6"></video></li>
+  <li>3.手机手环</li>
+  <li>1.小程序写手机手环</li>
+  <li><video src="./video/v17.mp4" style="width:100%;height:100%;" controls id="video7"></li>
+  <li>2.APP写手机手环</li>
+  <li><video src="./video/v18.mp4" style="width:100%;height:100%;" controls id="video8"></li>
+  <li>3.电脑端写手机手环</li>
+  <li><video src="./video/v19.mp4" style="width:100%;height:100%;" controls id="video9"></li>
+  <li>4.嗅探功能</li>
+  <li>1.小程序嗅探教程</li>
+  <li><video src="./video/v20.mp4" style="width:100%;height:100%;" controls id="video10"></li>
+  <li><video src="./video/v21.mp4" style="width:100%;height:100%;" controls id="video11"></li>
+  <li>2.APP嗅探教程</li>
+  <li><video src="./video/v22.mp4" style="width:100%;height:100%;" controls id="video12"></li>
+  <li>3.电脑端嗅探教程</li>
+  <li><video src="./video/v23.mp4" style="width:100%;height:100%;" controls id="video13"></li>
+  <li>5.分享数据</li>
+  <li>1)微信小程序分享卡包教程<br/>
+1.点卡包<br/>
+2.点你要分享的数据<br/>
+3.点卡片分享(第一次可能是失败  再点一次就自动复制了)<br/>
+4.发给微信/QQ同号：9008683<br/>
+能看到吗发给微信：9008683</li>
+  <li><video src="./video/v24.mp4" style="width:100%;height:100%;" controls id="video14"></li>
+  <li>2)安卓APP数据分享教程<br/>
+APP分享数据：<br/>
+主页→工具箱→dump列表→找到数据文件打开→左上角文件→分享<br/>
+
+APP分享里选择微信或者QQ  <br/>
+
+居然有人看不明白这个：可以发给客服或者发给微信/QQ同号：9008683<br/>
+
+真是挺无语的：上面说的可以发给微信或者QQ居然有人看不明白明<br/>
+在说明一下，如果发数据就发给微信号是9008683   或者QQ：9008683</li>
+
+  <li><video src="./video/v25.mp4" style="width:100%;height:100%;" controls id="video15"></li>
+  <li>3）电脑端数据分享教程 <br/>
+ 想分析的话先导入在分析(2和3) <br/>
+
+可以发给微信/QQ同号：9008683</li>
+
+  <li><img src="./images/image.png"/></li>
+  <li>读完卡后把数据保存点保存数据后选择保存到哪里。然后问客服技术的微信和QQ号码，把保存的文件发给技术。</li>
+  <li>6.判断是否可以复制</li>
+  <li>1.小程序判断<br/>
+1）小程序对比数据<br/>
+也可以发给客服或者发给微信/QQ同号：9008683<br/>
+点卡包找到数据点修改数据后最上面有对比数据，对比刷卡前与刷卡后数据。</li>
+  <li><img src="./images/m4.png"/></li>
+  <li><img src="./images/m5.png"/></li>
+  <li><img src="./images/m6.png"/></li>
+  <li><img src="./images/m7.png"/></li>
+  <li><img src="./images/m8.png"/></li>
+  <li><img src="./images/m9.png"/></li>
+  <li>2.APP判断</li>
+  <li><video src="./video/v26.mp4" style="width:100%;height:100%;" controls id="video16"></li>
+  <li>3.电脑端判断是否滚动码<br/>
+也可以发给客服或者发给微信/QQ同号：9008683</li>
+  <li><img src="./images/m10.png"/></li>
+  <li>7.CPU卡读写-不做详细技术支持<br/>
+由于CPU卡的特殊性与复杂性，只有设备连接教程，和连接卡片读写教程，不做过多详细教程</li>
+
+  <li><video src="./video/v27.mp4" style="width:100%;height:100%;" controls id="video27"></li>
+
+
+
+</ul>`,
+        video: "",
+        czTitle: "龙吟科技 NFC MAX操作说明书",
+      },
+      {
+        title: "写手机 NFC 教程",
+        img: "./images/m12.jpg",
+        desc: `<p></p>
+<ul>
+  <li>前言：在进行 NFC 模拟前，请确认您的门禁卡电梯卡不是滚动码的(滚动码就是每次刷卡数据
+都会变一次)，如果是滚动码的那就不建议 NFC 模拟了(因为很有可能会导致原卡不能用)，除
+非你原卡不用只刷手机 NFC(只能写入一个 NFC 设备使用)。写智能手环、手表 NFC 的方法跟
+写手机 NFC 都差不多。</li>
+  <li>准备工作：首先您得要有一张原卡(就是您想写进手机 NFC 里的卡，如果你有保存的数据，可
+以用保存的数据进行写手机就不需要原卡了)和一张中介卡(中介卡就是 UID 卡或者 CUID 卡)，
+一个读卡器，一条数据线，一台支持 NFC 的手机，一台电脑(没电脑也可以用手机 APP 操
+作)。</li>
+  <li>常见问题解答：</li>
+  <li>如果 NFC 模拟完后刷卡测试不能用，原卡数据和 NFC 设备数据对比一样(零扇区第一行后半
+部分不一样没事，如下图所示)</li>
+  <li><img src="./images/m13.png"/></li>
+  <li>有以下几种可能：<br/>
+1.手机或刷卡设备不兼容<br/>
+2.原卡是双频卡(ID IC)，用的是 ID<br/>
+3.原卡是 CPU 模拟卡<br/>
+4.原卡是亲邻卡<br/>
+5.被拉黑了</li>
+<li>我把蓝色卡扣当做原卡</li>
+  <li><img src="./images/m14.png"/></li>
+  <li>电脑软件操作：</li>
+  <li>首先打开电脑软件连接读卡器</li>
+  <li><img src="./images/m15.png"/></li>
+  <li>把原卡放在读卡器上后点击“开始解卡”(解卡完成后最好保存数据备份)(有数据的话直接把数据
+导进软件里面就行，这一步可以忽略)</li>
+<li><img src="./images/m16.png"/></li>
+<li><img src="./images/m17.png"/></li>
+  <li>解卡完成后，原卡暂时不拿开，点击“手机/手环操作区”的“第二步”(有数据的话直接把数据导进
+软件里面就行，这一步可以忽略)</li>
+<li><img src="./images/m18.png"/></li>
+  <li>卡号读取成功后，把原卡拿开并放上中介卡，然后点击“手机/手环操作区”的“第三步”</li>
+  <li><img src="./images/m19.png"/></li>
+  <li><img src="./images/m20.png"/></li>
+  <li>卡号写入成功后，就进行手机端的操作了，这里以小米手机为例，打开钱包→门卡·钥匙，点击
+添加实体门卡(不是自定义空白卡)，然后把中介卡放在手机 NFC 感应区，添加完成后将此卡设
+为默认卡。</li>
+<li><img src="./images/m21.png"/></li>
+<li><img src="./images/m22.png"/></li>
+<li><img src="./images/m23.png"/></li>
+<li><img src="./images/m24.png"/></li>
+<li><img src="./images/m25.png"/></li>
+<li><img src="./images/m26.png"/></li>
+  <li>上面操作完后，把手机当做卡放在读卡器感应区上，然后点击电脑软件“手机/手环操作区”的
+“第五步”，写卡完成就可以了(软件提示有一个扇区没写成功是正常的)</li>
+<li><img src="./images/m27.png"/></li>
+  <li><p><b>手机 APP 操作：</b></p></li>
+  <li>首先我们打开 PCR532 软件连接读卡器，把原卡放在读卡器上，点击“极速解卡”或“开始解卡”
+把原卡解开，解开后保存数据。</li>
+<li><img src="./images/m28.png"/></li>
+  <li>保存数据后点击“手机手环“</li>
+  <li><img src="./images/m29.png"/></li>
+  <li>(有数据的话直接把数据导进软件里面就行，上面几个步骤可以忽略)
+然后在“第一步”那里选择你刚刚保存的数据，然后把原卡从读卡器上拿开，放上中介卡后点击
+“第二步</li>
+<li><img src="./images/m30.png"/></li>
+<li><img src="./images/m31.png"/></li>
+  <li>卡号写入成功后，就进行手机端(想 NFC 模拟的手机)的操作了，这里以小米手机为例，打开钱
+包→门卡·钥匙，点击添加实体门卡(不是自定义空白卡)，然后把中介卡放在手机 NFC 感应区，
+添加完成后将此卡设为默认卡。</li>
+<li><img src="./images/m32.png"/></li>
+<li><img src="./images/m33.png"/></li>
+<li><img src="./images/m34.png"/></li>
+<li><img src="./images/m35.png"/></li>
+<li><img src="./images/m36.png"/></li>
+  <li>上面操作完后，把手机当做卡放在读卡器感应区上，然后点击手机软件“第四步”，写卡完成就
+可以了(软件提示有一个扇区没写成功是正常的)</li>
+<li><img src="./images/m37.png"/></li>
+<li><img src="./images/m38.png"/></li>
+  <li>微信小程序操作：</li>
+  <li>(微信小程序目前仅支持熊猫 GP 和部分蓝牙读卡器，并且需要 SVIP 会员才能正常使用)
+首先使用微信小程序连接读卡器，把原卡放在读卡器上点击“开始读卡”→“开始读 IC 卡</li>
+<li><img src="./images/m39.png"/></li>
+<li><img src="./images/m40.png"/></li>
+  <li>读卡完成后点击“保存卡包”备份一下数据，然后点击“前往写卡”</li>
+  <li><img src="./images/m41.png"/></li>
+  <li>接着点击“写手机/手环”</li>
+  <li><img src="./images/m42.png"/></li>
+  <li>把中介卡放在读卡器上，点击“第一步”</li>
+  <li><img src="./images/m43.png"/></li>
+  <li><img src="./images/m44.png"/></li>
+  <li>上一步操作完后，就进行手机端(想 NFC 模拟的手机)的操作了，这里以小米手机为例，打开钱
+包→门卡·钥匙，点击添加实体门卡(不是自定义空白卡)，然后把中介卡放在手机 NFC 感应区，
+添加完成后将此卡设为默认卡。</li>
+<li><img src="./images/m32.png"/></li>
+<li><img src="./images/m33.png"/></li>
+<li><img src="./images/m34.png"/></li>
+<li><img src="./images/m35.png"/></li>
+<li><img src="./images/m36.png"/></li>
+<li>上面操作完后，把手机当做卡放在读卡器感应区上，然后点击小程序上的“第二步”→“写数据到
+手机/手环”，写卡完成就可以了</li>
+<li><img src="./images/m45.png"/></li>
+<li><img src="./images/m46.png"/></li>
+<li><img src="./images/m47.png"/></li>
+<li><img src="./images/m48.png"/></li>
+<li><img src="./images/m49.png"/></li>
+
+
+</ul>`,
+        video: "",
+        czTitle: "写手机 NFC 教程说明书",
+      },
+      // 其他产品数据依次类推...
+    ];
+
+    // 弹窗元素
+    const modal = document.querySelector(".modal");
+    const closeBtn = document.querySelector(".close-btn");
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    const textContent = document.querySelector(".text-content");
+    const videoContent = document.querySelector(".video-content");
+    const detailVideo = document.querySelector("#detailVideo");
+
+    // 绑定列表点击事件
+    document.querySelectorAll(".item").forEach((item, index) => {
+      item.addEventListener("click", () => {
+        const data = itemsData[index];
+
+        // 更新弹窗内容
+        document.getElementById("detailTitle").textContent = data.title;
+        document.getElementById("detailImg").src = data.img;
+        document.getElementById("detailDesc").innerHTML = data.desc;
+        document.getElementById("czTitle").textContent = data.czTitle;
+
+        // 控制视频按钮的显示/隐藏
+        const videoBtn = document.getElementById("videoBtn");
+        if (data.video) {
+          videoBtn.style.display = "block";
+          detailVideo.querySelector("source").src = data.video;
+        } else {
+          videoBtn.style.display = "none";
+          detailVideo.querySelector("source").src = "";
+        }
+
+        // 重置选项卡状态
+        tabBtns[0].click();
+        modal.classList.add("active");
+
+        // 在内容更新后绑定视频控制事件
+        setTimeout(() => {
+          const allVideos = document.querySelectorAll("video");
+          allVideos.forEach((video) => {
+            video.addEventListener("play", () => {
+              allVideos.forEach((otherVideo) => {
+                if (otherVideo !== video) {
+                  otherVideo.pause();
+                }
+              });
+            });
+          });
+        }, 10);
+      });
+    });
+
+    // 选项卡切换
+    tabBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        // 切换按钮状态
+        tabBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        // 切换内容显示
+        const tab = btn.dataset.tab;
+        textContent.style.display = tab === "text" ? "block" : "none";
+        videoContent.style.display = tab === "video" ? "block" : "none";
+
+        // 切换到视频时加载视频
+        if (tab === "video") {
+          detailVideo.load();
+          detailVideo.play().catch(() => {}); // 处理自动播放限制
+        } else {
+          detailVideo.pause();
+        }
+      });
+    });
+
+    // 关闭弹窗
+    closeBtn.addEventListener("click", () => {
+      modal.classList.remove("active");
+      // 停止所有视频播放
+      const allVideos = document.querySelectorAll("video");
+      allVideos.forEach((video) => {
+        video.pause();
+      });
+    });
+
+    // 点击背景关闭
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.remove("active");
+        // 停止所有视频播放
+        const allVideos = document.querySelectorAll("video");
+        allVideos.forEach((video) => {
+          video.pause();
+        });
+      }
+    });
+
+    // 添加视频切换控制
+    const videos = document.querySelectorAll("video");
+    console.log(videos, "videos");
+
+    videos.forEach((video) => {
+      video.addEventListener("play", () => {
+        // 当某个视频开始播放时，暂停其他所有视频
+        videos.forEach((otherVideo) => {
+          if (otherVideo !== video) {
+            otherVideo.pause();
+          }
+        });
+      });
+    });
+    // // 禁用右键菜单
+    // document.addEventListener("contextmenu", function (e) {
+    //   e.preventDefault();
+    // });
+
+    // // 尝试禁用开发者工具快捷键
+    // document.addEventListener("keydown", function (e) {
+    //   if (
+    //     e.keyCode === 123 || // F12
+    //     (e.ctrlKey && e.shiftKey && e.keyCode === 73) || // Ctrl+Shift+I
+    //     (e.ctrlKey && e.shiftKey && e.keyCode === 74)
+    //   ) {
+    //     // Ctrl+Shift+J
+    //     e.preventDefault();
+    //     alert("开发者工具已禁用");
+    //   }
+    // });
+    // // 定期检查窗口大小变化（开发者工具打开时可能会改变窗口大小）
+    // let widthThreshold = window.outerWidth - window.innerWidth > 160;
+    // let heightThreshold = window.outerHeight - window.innerHeight > 160;
+
+    // setInterval(function () {
+    //   if (
+    //     window.outerWidth - window.innerWidth > 160 ||
+    //     window.outerHeight - window.innerHeight > 160
+    //   ) {
+    //     document.body.innerHTML = "请关闭开发者工具";
+    //   }
+    // }, 1000);
+
+  // 引入模块
+const LaApi = require('51la-v6-openapi-nodejs-sdk');
+
+// 初始化函数
+const getLaApiData = new LaApi.init();
+
+// 设置参数
+getLaApiData.setOptions({
+  ak: 'TftoNfjCvRjDAyktNXV5ccYO695AAIRf',  // 请填写您的accessKey  可在 https://v6.51.la/user/application/openapi 查看。
+  // sk: 'your secretKey', // 请填写您的secretKey type=1时（即选择低安全性校验时），可不填写。
+  type: 1, // 加密方式（非必传，默认为中等） 1为低安全性 2为中等 3为高安全性（双向加密，插件会帮助你完成解密操作）
+})
+getLaApiData.requestApi('/sitegroup/list', {
+  // 参数
+}).then(result => {
+  console.log(result.data)
+}).catch(error => {
+  console.log(error)
+})
+const requestData = {
+  maskId: "3LBTFdAsLwdBBX0V",
+  accessKey: "TftoNfjCvRjDAyktNXV5ccYO695AAIRf",
+  nonce: Math.floor(1000 + Math.random() * 9000).toString(),
+  timestamp: new Date().getTime().toString(),
+  sign: "20EF936DB5C1BA19403B2B84C2232FE53B91EE58D263CE4FAA12CFE0EB963B4D",
+  
+};
+
+const url = "https://v6-open.51.la/open/overview/get";
+
+// 2. 发起fetch POST请求
+fetch(url, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json" // 必须声明JSON格式
+  },
+  body: JSON.stringify(requestData) // 参数序列化为JSON字符串
+})
+.then(response => {
+  if (!response.ok) {
+    throw new Error(`请求失败，状态码：${response.status}`);
+  }
+  return response.json();
+})
+.then(data => {
+  console.log("接口返回数据：", data);
+})
+.catch(error => {
+  console.error("请求异常：", error.message);
+});
+  </script>
+  <script
+    charset="UTF-8"
+    id="LA_COLLECT"
+    src="//sdk.51.la/js-sdk-pro.min.js"
+  ></script>
+  <script>
+    LA.init({
+      id: "3LBTFdAsLwdBBX0V",
+      ck: "3LBTFdAsLwdBBX0V",
+      autoTrack: true,
+    });
+  </script>
+  
+</html>

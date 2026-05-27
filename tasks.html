@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>领取更多积分 - 卡小帮</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; min-height: 100vh; }
+
+    header { width: 100%; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #eee; background: #fff; position: sticky; top: 0; z-index: 10; }
+    .brand span { font-size: 18px; font-weight: 600; }
+    .header-links { display: flex; gap: 12px; }
+    .header-links a { font-size: 14px; color: #007bff; text-decoration: none; }
+
+    .container { max-width: 600px; margin: 30px auto; padding: 0 16px; }
+
+    .points-bar { background: linear-gradient(135deg, #28a745, #20c997); border-radius: 12px; padding: 20px; color: #fff; margin-bottom: 20px; text-align: center; }
+    .points-bar .label { font-size: 14px; opacity: .8; }
+    .points-bar .amount { font-size: 32px; font-weight: 700; margin-top: 4px; }
+
+    .section-title { font-size: 18px; font-weight: 600; margin-bottom: 14px; color: #333; }
+
+    .task-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+    .task-item { background: #fff; border-radius: 12px; padding: 18px 20px; box-shadow: 0 2px 10px rgba(0,0,0,.04); display: flex; justify-content: space-between; align-items: center; }
+    .task-item .info { flex: 1; }
+    .task-item .name { font-size: 15px; font-weight: 600; color: #222; margin-bottom: 4px; }
+    .task-item .desc { font-size: 13px; color: #888; }
+    .task-item .reward { background: #fff3cd; color: #856404; padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 600; white-space: nowrap; margin-left: 12px; }
+    .task-item .do-btn { padding: 8px 16px; background: #28a745; color: #fff; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; margin-left: 10px; white-space: nowrap; }
+    .task-item .do-btn:hover { background: #218838; }
+
+    .empty { text-align: center; color: #888; padding: 40px 0; font-size: 14px; }
+
+    /* 提交弹窗 */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.5); z-index: 100; justify-content: center; align-items: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #fff; border-radius: 12px; padding: 24px; width: 90%; max-width: 450px; max-height: 80vh; overflow-y: auto; }
+    .modal h3 { margin-bottom: 16px; font-size: 18px; }
+    .modal .form-group { margin-bottom: 14px; }
+    .modal .form-group label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; }
+    .modal .upload-area { border: 2px dashed #ddd; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; }
+    .modal .upload-area:hover { border-color: #28a745; }
+    .modal .upload-area input { display: none; }
+    .modal .upload-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .modal .upload-preview img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; }
+    .modal .btn-row { display: flex; gap: 10px; margin-top: 16px; }
+    .modal .btn-row button { flex: 1; padding: 10px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
+    .modal .btn-confirm { background: #28a745; color: #fff; }
+    .modal .btn-cancel { background: #e9ecef; color: #333; }
+
+    .my-submits { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,.04); }
+    .my-submits h3 { font-size: 16px; margin-bottom: 12px; }
+    .submit-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+    .submit-item:last-child { border-bottom: none; }
+    .submit-item .name { font-size: 14px; font-weight: 500; }
+    .submit-item .meta { font-size: 12px; color: #888; margin-top: 4px; }
+    .submit-item .status { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-approved { background: #d4edda; color: #155724; }
+    .status-rejected { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span>🎯 领取更多积分</span></div>
+    <div class="header-links">
+      <a href="./checkin.html">签到</a>
+      <a href="./shop.html">商城</a>
+      <a href="./index.html">首页</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="points-bar">
+      <div class="label">我的积分</div>
+      <div class="amount" id="myPoints">0</div>
+    </div>
+
+    <div class="section-title">📋 可完成的任务</div>
+    <div class="task-list" id="taskList">
+      <div class="empty">暂无任务</div>
+    </div>
+
+    <div class="my-submits">
+      <h3>我的提交记录</h3>
+      <div id="submitList"><div class="empty">暂无记录</div></div>
+    </div>
+  </div>
+
+  <!-- 提交任务弹窗 -->
+  <div class="modal-overlay" id="submitModal">
+    <div class="modal">
+      <h3 id="submitTaskName">提交任务</h3>
+      <div class="form-group">
+        <label>上传截图（可多张）</label>
+        <div class="upload-area" onclick="document.getElementById('taskImages').click()">
+          <input type="file" id="taskImages" accept="image/*" multiple onchange="previewImages(this)">
+          <div>📷 点击上传截图</div>
+        </div>
+        <div class="upload-preview" id="imagePreview"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-confirm" onclick="doSubmit()">提交审核</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const userPhone = localStorage.getItem('user_phone');
+    if (!userPhone) location.href = './login.html?from=tasks.html';
+
+    let currentTaskId = '';
+
+    loadUserInfo();
+    loadTasks();
+    loadMySubmits();
+
+    async function loadUserInfo() {
+      try {
+        const res = await fetch(`./api/user_info.php?phone=${userPhone}`);
+        const data = await res.json();
+        if (data.code === 200) {
+          document.getElementById('myPoints').textContent = data.data.points;
+        }
+      } catch(e) {}
+    }
+
+    async function loadTasks() {
+      try {
+        const res = await fetch('./api/task.php?type=tasks');
+        const data = await res.json();
+        if (data.code === 200) renderTasks(data.data);
+      } catch(e) {}
+    }
+
+    function renderTasks(tasks) {
+      const el = document.getElementById('taskList');
+      if (tasks.length === 0) { el.innerHTML = '<div class="empty">暂无可完成的任务，敬请期待</div>'; return; }
+      el.innerHTML = tasks.map(t => `
+        <div class="task-item">
+          <div class="info">
+            <div class="name">${t.name}</div>
+            <div class="desc">${t.desc || ''}</div>
+          </div>
+          <span class="reward">+${t.reward}积分</span>
+          <button class="do-btn" onclick="openSubmit('${t.id}','${t.name}')">去完成</button>
+        </div>
+      `).join('');
+    }
+
+    function openSubmit(taskId, taskName) {
+      currentTaskId = taskId;
+      document.getElementById('submitTaskName').textContent = '提交：' + taskName;
+      document.getElementById('taskImages').value = '';
+      document.getElementById('imagePreview').innerHTML = '';
+      document.getElementById('submitModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('submitModal').classList.remove('active');
+      currentTaskId = '';
+    }
+
+    function previewImages(input) {
+      const preview = document.getElementById('imagePreview');
+      preview.innerHTML = '';
+      for (const file of input.files) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.innerHTML += `<img src="${e.target.result}">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function doSubmit() {
+      const files = document.getElementById('taskImages').files;
+      if (files.length === 0) { alert('请上传截图'); return; }
+
+      const formData = new FormData();
+      formData.append('action', 'submit');
+      formData.append('phone', userPhone);
+      formData.append('taskId', currentTaskId);
+      for (let i = 0; i < files.length; i++) {
+        formData.append('images[]', files[i]);
+      }
+
+      try {
+        const res = await fetch('./api/task.php', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.code === 200) {
+          alert('提交成功，等待管理员审核');
+          closeModal();
+          loadMySubmits();
+        } else {
+          alert(data.msg);
+        }
+      } catch(e) { alert('提交失败'); }
+    }
+
+    async function loadMySubmits() {
+      try {
+        const res = await fetch(`./api/task.php?phone=${userPhone}&type=my_submits`);
+        const data = await res.json();
+        if (data.code === 200) renderSubmits(data.data);
+      } catch(e) {}
+    }
+
+    function renderSubmits(list) {
+      const el = document.getElementById('submitList');
+      if (list.length === 0) { el.innerHTML = '<div class="empty">暂无提交记录</div>'; return; }
+      const statusText = { pending: '审核中', approved: '已通过', rejected: '未通过' };
+      el.innerHTML = list.map(s => `
+        <div class="submit-item">
+          <div class="name">${s.taskName} <span class="status status-${s.status}">${statusText[s.status]}</span></div>
+          <div class="meta">奖励：${s.reward}积分 | 提交时间：${s.submitTime}</div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

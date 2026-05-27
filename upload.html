@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>提交软件 - 卡小帮软件库</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; min-height: 100vh; }
+
+    header { width: 100%; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #eee; background: #fff; position: sticky; top: 0; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand span { font-size: 18px; font-weight: 600; }
+    .back { font-size: 14px; color: #007bff; text-decoration: none; }
+
+    .container { max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    .form-card { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    .form-card h2 { font-size: 22px; margin-bottom: 8px; color: #222; }
+    .form-card p.tip { font-size: 14px; color: #888; margin-bottom: 24px; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 500; color: #333; margin-bottom: 6px; }
+    .form-group input[type="text"],
+    .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; transition: border-color .2s; }
+    .form-group input[type="text"]:focus,
+    .form-group textarea:focus { border-color: #007bff; }
+    .form-group textarea { height: 80px; resize: vertical; }
+
+    .file-upload { position: relative; border: 2px dashed #ddd; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; }
+    .file-upload:hover { border-color: #007bff; background: #f0f7ff; }
+    .file-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .file-upload .icon { font-size: 36px; color: #ccc; margin-bottom: 8px; }
+    .file-upload .text { font-size: 14px; color: #666; }
+    .file-upload .selected { font-size: 13px; color: #007bff; margin-top: 8px; word-break: break-all; }
+
+    .submit-btn { width: 100%; padding: 12px; background: #007bff; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; transition: background .2s; }
+    .submit-btn:hover { background: #0056b3; }
+    .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    .msg { margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 14px; display: none; }
+    .msg.success { display: block; background: #d4edda; color: #155724; }
+    .msg.error { display: block; background: #f8d7da; color: #721c24; }
+
+    .progress { margin-top: 12px; display: none; }
+    .progress-bar { height: 6px; background: #e9ecef; border-radius: 3px; overflow: hidden; }
+    .progress-bar .fill { height: 100%; background: #007bff; transition: width .3s; width: 0%; }
+    .progress-text { font-size: 12px; color: #666; margin-top: 4px; text-align: center; }
+
+    @media (max-width: 768px) {
+      .container { margin: 20px auto; }
+      .form-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span>提交软件</span></div>
+    <a class="back" href="./rjk.html">返回软件库</a>
+  </header>
+
+  <div class="container">
+    <div class="form-card">
+      <h2>提交软件到软件库</h2>
+      <p class="tip">上传后需管理员审核通过才会显示在软件库中</p>
+
+      <form id="uploadForm">
+        <div class="form-group">
+          <label>软件名称 *</label>
+          <input type="text" id="title" placeholder="请输入软件名称" required>
+        </div>
+        <div class="form-group">
+          <label>软件描述</label>
+          <textarea id="desc" placeholder="简单描述一下这个软件的功能（选填）"></textarea>
+        </div>
+        <div class="form-group">
+          <label>上传文件 *</label>
+          <div class="file-upload" id="fileArea">
+            <input type="file" id="fileInput" accept=".exe,.apk,.zip,.rar,.7z,.msi,.dmg,.deb">
+            <div class="icon">📁</div>
+            <div class="text">点击或拖拽文件到此处上传</div>
+            <div class="text" style="font-size:12px;color:#aaa;margin-top:4px;">支持 exe/apk/zip/rar/7z 等格式，最大1000MB</div>
+            <div class="selected" id="fileName"></div>
+          </div>
+        </div>
+
+        <div class="progress" id="progress">
+          <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
+          <div class="progress-text" id="progressText">上传中...</div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">提交软件</button>
+      </form>
+
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+  <script>
+    // ===== 登录检查 =====
+    const userPhone = localStorage.getItem('user_phone');
+    let isLoggedIn = false;
+
+    async function checkLogin() {
+      if (!userPhone) { blockAccess(); return; }
+      try {
+        const res = await fetch('./api/user_check.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: userPhone })
+        });
+        const data = await res.json();
+        if (data.code === 200) {
+          isLoggedIn = true;
+        } else {
+          localStorage.removeItem('user_phone');
+          localStorage.removeItem('user_name');
+          blockAccess();
+        }
+      } catch (err) {
+        // 后端不可用时允许（降级）
+        isLoggedIn = true;
+      }
+    }
+
+    function blockAccess() {
+      document.getElementById('uploadForm').style.display = 'none';
+      const msgEl = document.getElementById('msg');
+      msgEl.className = 'msg error';
+      msgEl.innerHTML = '⚠️ 您尚未登录，无法上传软件。<a href="./login.html?from=upload.html" style="color:#007bff;">点击登录/注册</a>';
+      msgEl.style.display = 'block';
+    }
+
+    checkLogin();
+
+    // ===== 上传逻辑 =====
+    const fileInput = document.getElementById('fileInput');
+    const fileName = document.getElementById('fileName');
+    const form = document.getElementById('uploadForm');
+    const msg = document.getElementById('msg');
+    const submitBtn = document.getElementById('submitBtn');
+    const progress = document.getElementById('progress');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+
+    fileInput.addEventListener('change', function() {
+      if (this.files.length > 0) {
+        const file = this.files[0];
+        const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+        fileName.textContent = `已选择: ${file.name} (${sizeMB}MB)`;
+      } else {
+        fileName.textContent = '';
+      }
+    });
+
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const title = document.getElementById('title').value.trim();
+      const desc = document.getElementById('desc').value.trim();
+      const file = fileInput.files[0];
+
+      if (!title) { showMsg('error', '请填写软件名称'); return; }
+      if (!file) { showMsg('error', '请选择要上传的文件'); return; }
+      if (file.size > 1000 * 1024 * 1024) { showMsg('error', '文件大小不能超过1000MB'); return; }
+
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('desc', desc);
+      formData.append('file', file);
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '上传中...';
+      progress.style.display = 'block';
+      msg.className = 'msg';
+      msg.style.display = 'none';
+
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', './api/upload.php');
+
+        xhr.upload.onprogress = function(e) {
+          if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            progressFill.style.width = percent + '%';
+            progressText.textContent = `上传中... ${percent}%`;
+          }
+        };
+
+        xhr.onload = function() {
+          const res = JSON.parse(xhr.responseText);
+          if (res.code === 200) {
+            showMsg('success', '✅ ' + res.msg);
+            form.reset();
+            fileName.textContent = '';
+          } else {
+            showMsg('error', '❌ ' + res.msg);
+          }
+          submitBtn.disabled = false;
+          submitBtn.textContent = '提交软件';
+          progress.style.display = 'none';
+        };
+
+        xhr.onerror = function() {
+          showMsg('error', '网络错误，请重试');
+          submitBtn.disabled = false;
+          submitBtn.textContent = '提交软件';
+          progress.style.display = 'none';
+        };
+
+        xhr.send(formData);
+      } catch (err) {
+        showMsg('error', '上传失败: ' + err.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = '提交软件';
+        progress.style.display = 'none';
+      }
+    });
+
+    function showMsg(type, text) {
+      msg.className = 'msg ' + type;
+      msg.textContent = text;
+      msg.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

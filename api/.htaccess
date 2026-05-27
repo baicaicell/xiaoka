@@ -1,0 +1,5 @@
+# 禁止直接访问数据文件
+<FilesMatch "\.json$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
